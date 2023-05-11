@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "copeRadio",
-    "slug": "copeRadio",
+    "name": "Cope Radio",
+    "slug": "coperadio",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
