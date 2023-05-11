@@ -231,6 +231,8 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+
+    implementation 'com.github.mik3y:usb-serial-for-android:3.5.1'
 }
 
 apply from: new File(["node", "--print", "require.resolve('@react-native-community/cli-platform-android/package.json')"].execute(null, rootDir).text.trim(), "../native_modules.gradle");
