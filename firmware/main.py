@@ -3,7 +3,7 @@ import math
 from collections import namedtuple
 from random import random
 from machine import UART, Pin
-from struct import pack
+import struct
 
 FLAGS_ACK = 0x80
 BROADCAST_ADDRESS = 255
@@ -106,9 +106,9 @@ class LoRa(object):
         self.set_mode_idle()
 
         # set modem config (Bw125Cr45Sf128)
-        self._spi_write(REG_1D_MODEM_CONFIG1, self._modem_config.value[0])
-        self._spi_write(REG_1E_MODEM_CONFIG2, self._modem_config.value[1])
-        self._spi_write(REG_26_MODEM_CONFIG3, self._modem_config.value[2])
+        self._spi_write(REG_1D_MODEM_CONFIG1, self._modem_config[0])
+        self._spi_write(REG_1E_MODEM_CONFIG2, self._modem_config[1])
+        self._spi_write(REG_26_MODEM_CONFIG3, self._modem_config[2])
 
         # set preamble length (8)
         self._spi_write(REG_20_PREAMBLE_MSB, 0)
@@ -198,15 +198,6 @@ class LoRa(object):
             self._spi_write(REG_01_OP_MODE, MODE_STDBY)
             self._mode = MODE_STDBY
 
-    def craft_packet(self, type, register, payload):
-        if type == 'R':
-            out = type.encode('ASCII') + bytes(register) + pack("b", payload)
-        else:
-            out = type.encode('ASCII') + bytes(register) + b"\x01" + bytes(payload)
-        
-        print(out)
-        return out
-
     def send(self, data, header_to, header_id=0, header_flags=0):
         self.wait_packet_sent()
         self.set_mode_idle()
@@ -258,6 +249,7 @@ class LoRa(object):
         self.wait_packet_sent()
 
     def _spi_write(self, register, payload):
+        
         if type(payload) == int:
             payload = [payload]
         elif type(payload) == bytes:
@@ -265,19 +257,24 @@ class LoRa(object):
         elif type(payload) == str:
             payload = [ord(s) for s in payload]
 
-        self.uart.write(self.craft_packet("W", [register], payload))
-        time.sleep(0.01)
+        self.uart.write(b'W')
+        self.uart.write(struct.pack("b", register | 0x80))
+        self.uart.write(struct.pack("b",len(payload)))
+        self.uart.write(bytes(payload))
 
     def _spi_read(self, register, length=1):
-        self.uart.write(self.craft_packet("R", [register], length))
-        time.sleep(0.01)
-        response = self.uart.read()
-        print(response.hex())
+        self.uart.write(b'R')
+        self.uart.write(struct.pack("b", register & ~0x80))
+        self.uart.write(struct.pack("b", length))
+
+        time.sleep(0.01) # wait for response
+
+        response = struct.unpack("B", self.uart.read())
 
         if length == 1:
-            return response
+            return response[0]
         else:
-            return response
+            return response[0]
 
     def _decrypt(self, message):
         decrypted_msg = self.crypto.decrypt(message)
@@ -349,9 +346,9 @@ class LoRa(object):
 
         self._spi_write(REG_12_IRQ_FLAGS, 0xff)
 
-    def close(self):
-        GPIO.cleanup()
-        self.spi.close()
+    #def close(self):
+        #GPIO.cleanup()
+        #self.spi.close()
 
 # This is our callback function that runs when a message is received
 def on_recv(payload):
@@ -376,4 +373,4 @@ else:
     print("No acknowledgment from recipient")
     
 # And remember to call this as your program exits...
-lora.close()
+#lora.close()
