@@ -28,25 +28,6 @@ const Item = ({item, navigation}) => (
   </View>
 );
 
-// const Dropdown = () => {
-//   return (
-//     <View style={styles.countryContainer}>
-//       <Text style={styles.countryParagraph}>
-//         Select Region
-//       </Text>
-//       <DropDownPicker
-//           items={[
-//               {region: 'Asia', value: 'As'},
-//               {region: 'Europe', value: 'Eu'},
-//               {region: 'Amereica', value: 'Am'},
-//           ]}
-//           defaultIndex={0}
-//           containerStyle={{height: 40}}
-//           onChangeItem={item => console.log(item.region, item.value)}
-//       />
-//     </View>
-//   );
-//   };
 
 function ChangeRegionScreen({navigation}){
   const [selectedLanguage, setSelectedLanguage] = useState();
