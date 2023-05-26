@@ -5,7 +5,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import DropDownPicker from 'react-native-dropdown-picker';
+import {Picker} from '@react-native-picker/picker';
+import { useState, useEffect } from 'react';
 
 
 const {UsbSerial} = NativeModules;
@@ -27,27 +28,45 @@ const Item = ({item, navigation}) => (
   </View>
 );
 
-const Dropdown = () => {
+// const Dropdown = () => {
+//   return (
+//     <View style={styles.countryContainer}>
+//       <Text style={styles.countryParagraph}>
+//         Select Region
+//       </Text>
+//       <DropDownPicker
+//           items={[
+//               {region: 'Asia', value: 'As'},
+//               {region: 'Europe', value: 'Eu'},
+//               {region: 'Amereica', value: 'Am'},
+//           ]}
+//           defaultIndex={0}
+//           containerStyle={{height: 40}}
+//           onChangeItem={item => console.log(item.region, item.value)}
+//       />
+//     </View>
+//   );
+//   };
+
+function ChangeRegionScreen({navigation}){
+  const [selectedLanguage, setSelectedLanguage] = useState();
   return (
-    <View style={styles.countryContainer}>
-      <Text style={styles.countryParagraph}>
-        Select Region
+    <View>
+      <Text>
+        {'Select Region'}
       </Text>
-      <DropDownPicker
-          items={[
-              {region: 'Asia', value: 'As'},
-              {region: 'Europe', value: 'Eu'},
-              {region: 'Amereica', value: 'Am'},
-          ]}
-          defaultIndex={0}
-          containerStyle={{height: 40}}
-          onChangeItem={item => console.log(item.label, item.value)}
-      />
+      <Picker
+     selectedValue={selectedLanguage}
+  onValueChange={(itemValue, itemIndex) =>
+    setSelectedLanguage(itemValue)
+  }>
+  <Picker.Item label="Europe" value="EU" />
+  <Picker.Item label="Asia" value="AS" />
+  <Picker.Item label="America" value="AM" />
+  </Picker>
     </View>
   );
-  };
-
-  
+}
 
 
 
@@ -61,6 +80,9 @@ function HomeScreen({navigation}) {
         renderItem={({item}) => <Item item={item} navigation={navigation} />}
         keyExtractor={item => item.id}
       />
+    <Pressable style={styles.contact} onPress={() => navigation.navigate('ChangeRegion')}>
+      <Text>Change Region</Text>
+    </Pressable>
     </View>
   );
 }
@@ -101,6 +123,7 @@ function App() {
         <Stack.Navigator screenOptions={{animation: "slide_from_right"}}>
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Details" component={DetailsScreen} options={({ route }) => ({ title: route.params.name })}/>
+          <Stack.Screen name="ChangeRegion" component={ChangeRegionScreen}/>
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
@@ -119,7 +142,7 @@ const styles = StyleSheet.create({
   countryContainer: {
     flex: 1,
     justifyContent: 'center',
-    paddingTop: Constants.statusBarHeight,
+    paddingTop: 1,
     backgroundColor: '#ecf0f1',
     padding: 8,
   },
