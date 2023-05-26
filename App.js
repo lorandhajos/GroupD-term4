@@ -5,6 +5,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import DropDownPicker from 'react-native-dropdown-picker';
+
 
 const {UsbSerial} = NativeModules;
 const Stack = createNativeStackNavigator();
@@ -24,6 +26,32 @@ const Item = ({item, navigation}) => (
     </Pressable>
   </View>
 );
+
+const Dropdown = () => {
+  return (
+    <View style={styles.countryContainer}>
+      <Text style={styles.countryParagraph}>
+        Select Region
+      </Text>
+      <DropDownPicker
+          items={[
+              {region: 'Asia', value: 'As'},
+              {region: 'Europe', value: 'Eu'},
+              {region: 'Amereica', value: 'Am'},
+          ]}
+          defaultIndex={0}
+          containerStyle={{height: 40}}
+          onChangeItem={item => console.log(item.label, item.value)}
+      />
+    </View>
+  );
+  };
+
+  
+
+
+
+
 
 function HomeScreen({navigation}) {
   return (
@@ -63,6 +91,8 @@ function FirstTimeSetupScreen() {
 
 }
 
+
+
 function App() {
   return (
     <SafeAreaProvider>
@@ -85,6 +115,19 @@ const styles = StyleSheet.create({
   messagesContainer: {
     flex: 1,
     padding: 10,
+  },
+  countryContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingTop: Constants.statusBarHeight,
+    backgroundColor: '#ecf0f1',
+    padding: 8,
+  },
+  countryParagraph: {
+    margin: 24,
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   message: {
     paddingVertical: 5,
