@@ -8,7 +8,6 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import {Picker} from '@react-native-picker/picker';
 import { useState, useEffect } from 'react';
 
-
 const {UsbSerial} = NativeModules;
 const Stack = createNativeStackNavigator();
 
@@ -27,7 +26,6 @@ const Item = ({item, navigation}) => (
     </Pressable>
   </View>
 );
-
 
 function ChangeRegionScreen({navigation}){
   const [selectedLanguage, setSelectedLanguage] = useState();
@@ -48,10 +46,6 @@ function ChangeRegionScreen({navigation}){
     </View>
   );
 }
-
-
-
-
 
 function HomeScreen({navigation}) {
   return (
@@ -93,8 +87,6 @@ function DetailsScreen({route}) {
 function FirstTimeSetupScreen() {
 
 }
-
-
 
 function App() {
   return (
