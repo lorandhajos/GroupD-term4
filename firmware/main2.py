@@ -3,6 +3,9 @@ from collections import namedtuple
 from machine import UART, Pin
 import struct
 
+from circuitpython_typing import WriteableBuffer, ReadableBuffer
+#we need to fix that
+
 class ModemConfig():
     Bw125Cr45Sf128   = (0x72, 0x74, 0x04)
     Bw500Cr45Sf128   = (0x92, 0x74, 0x04)
@@ -111,6 +114,11 @@ MODE_TX = 0x03
 MODE_RXCONTINUOUS = 0x05
 MODE_CAD = 0x07
 
+def read_into(address:int, buf: WriteableBuffer, length: Optional[int] = None) -> None:
+    pass
+    #if length is None:
+        #length = len(buf)
+
 def read_u8(register):
     uart.write(b'R')
     uart.write(struct.pack("b", register & ~0x80))
@@ -151,6 +159,26 @@ class RegisterBits:
         reg_value &= ~self._mask
         reg_value |= (val & 0xFF) << self._offset
         write_u8(self._address, reg_value)
+    
+    def reset(self) -> None:
+        self._reset.value = False
+        time.sleep(0.0001)
+        self._reset.value = True
+        time.sleep(0.005)
+    
+    def idle(self) -> None:
+        self.operation_mode = STANDBY_MODE
+        
+    def sleep(self) -> None:
+        self.operation_mode = SLEEP_MODE
+    
+    def listen(self) -> None:
+        self.operation_mode = RX_MODE
+        self.dio0_mapping = 0b00
+        
+    def transmit(self) -> None:
+        self.operation_mode = TX_MODE
+        self.dio0_mapping = 0b01
 
 bw_bins = (7800, 10400, 15600, 20800, 31250, 41700, 62500, 125000, 250000)
 
@@ -267,6 +295,35 @@ def send(data, destination, node, identifier, flags):
     # Clear interrupt.
     write_u8(REG_12_IRQ_FLAGS, 0xFF)
 
+def receive(
+        keep_listening: bool = True, with_header: bool = False, with_ack: bool = False, ack_delay: Optional[float] = 0.001, timeout: Optional[float] = 2
+    ) -> Optional[bytearray]:
+    timed_out = False
+    
+    if not timed_out:
+        fifo_length = read_u8(REG_13_RX_NB_BYTES)
+        
+        if fifo_length > 0:
+            current_address = read_u8(REG_10_FIFO_RX_CURRENT_ADDR)
+            write_u8(REG_0D_FIFO_ADDR_PTR, current_address)
+            packet = bytearray(fifo_length)
+            
+            if fifo_length < 5:
+                packet = None
+            else:
+                #We check if broadcast adress is the first register of the packet, Not sure weather this is correct???????
+                if packet[0] == REG_34_BROADCAST_ADRS:
+                    packet = None
+                elif with_ack and ((packet[3] ==0) and packet[0] != REG_34_BROADCAST_ADRS):
+                    
+                    if ack_delay is not None:
+                        time.sleep(ack_delay)
+                        #delay to send back
+                    send(b"!", packet[1], packet[0], packet[2], packet[3])
+            
+    
+    
+    
 # ========== Variables ==========
 #
 # 0x00 - 0x64 FSK/OOK Mode Registers
@@ -372,3 +429,6 @@ tx_power(13)
 send(b'Hello', 0, 0, 0, 0)
 
 print("Done!")
+
+register_bits = RegisterBits(0, 0, 4)
+register_bits.listen()
