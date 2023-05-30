@@ -1,10 +1,12 @@
 import React from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, Button, NativeModules, TextInput, FlatList, Pressable, TouchableHighlight } from 'react-native';
+import { StyleSheet, Text, ImageBackground, View, Button, NativeModules, TextInput, FlatList, Pressable, TouchableHighlight } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { useCallback, useEffect, useState } from "react";
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Asset, useAssets } from 'expo-asset';
 
 const {UsbSerial} = NativeModules;
 const Stack = createNativeStackNavigator();
@@ -59,16 +61,79 @@ function DetailsScreen({route}) {
   );
 }
 
-function FirstTimeSetupScreen() {
+function FirstTimeSetupScreen({navigation}) {
 
+  const image = require('./assets/setupImage.png');
+
+  return (
+    <View style={styles.setupScreen}>
+      <ImageBackground source={image} resize='cover' style={styles.setupImage}>
+        <Pressable style={styles.communicationButton} onPress={ () => navigation.navigate('Home')}>
+          <Text style={styles.startCommunication}>Start communication</Text>
+        </Pressable>
+        <Pressable style={styles.settingButton} onPress={ () => navigation.navigate('Home')}>
+          <Text style={styles.startCommunication}>Settings</Text>
+        </Pressable>
+        <Text style={styles.inspirationQuote}>“JOBS FILL YOUR POCKETS, BUT ADVENTURES FILL YOUR SOUL.”</Text>
+        <Pressable style={styles.sosButton} onPress={() =>
+           <Button title='Send'/>}>
+          <Text style={styles.sosText}>SOS</Text>
+        </Pressable>
+      </ImageBackground>
+
+    </View>
+  );
 }
 
 function App() {
+  const [appIsLoaded, setAppIsLoaded] = useState(false);
+
+  useEffect(() => {
+    
+  const prepare = async () => {
+    try {
+      await Font.loadAsync({
+        "black": require("./assets/fonts//Roboto-Black.ttf"),
+        "blackItalic": require("./assets/fonts/Roboto-BlackItalic.ttf"),
+        "bold": require("./assets/fonts/Roboto-Bold.ttf"),
+        "boldItalic": require("./assets/fonts/Roboto-BoldItalic.ttf"),
+        "italic": require("./assets/fonts/Roboto-Italic.ttf"),
+        "light": require("./assets/fonts/Roboto-Light.ttf"),
+        "lightItalic": require("./assets/fonts/Roboto-LightItalic.ttf"),
+        "medium": require("./assets/fonts/Roboto-Medium.ttf"),
+        "mediumItalic": require("./assets/fonts/Roboto-MediumItalic.ttf"),
+        "regular": require("./assets/fonts/Roboto-Regular.ttf"),
+        "thin": require("./assets/fonts/Roboto-Thin.ttf"),
+          "thinItalic": require("./assets/fonts/Roboto-ThinItalic.ttf"),
+      });
+    }
+    catch (error) {
+      console.log.error();
+    }
+    finally {
+      setAppIsLoaded(true);
+    }
+  };
+
+  prepare();
+  }, []);
+
+  const onLayout = useCallback(async () => {
+  if (appIsLoaded) {
+    await SplashScreen.hideAsync();
+  }
+  }, [appIsLoaded]);
+
+  if (!appIsLoaded) {
+  return null;
+  }
+
   return (
     <SafeAreaProvider>
       <StatusBar style="auto" />
       <NavigationContainer>
         <Stack.Navigator screenOptions={{animation: "slide_from_right"}}>
+          <Stack.Screen name="Setup Screen" component={FirstTimeSetupScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Details" component={DetailsScreen} options={({ route }) => ({ title: route.params.name })}/>
         </Stack.Navigator>
@@ -132,6 +197,66 @@ const styles = StyleSheet.create({
   time: {
     height: '100%',
   },
+  setupScreen:{
+    flex: 1,
+  },
+
+  setupImage: {
+    flex: 1,
+  },
+  communicationButton:{
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: 'black',
+    height: '5%',
+    width: '60%',
+    marginLeft:'20%',
+    marginVertical: '10%',
+  },
+  settingButton:{
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: 'black',
+    height: '5%',
+    width: '60%',
+    marginLeft:'20%',
+  },
+  startCommunication:{
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  inspirationQuote: {
+    flex: 1,
+    color: 'white',
+    alignItems: 'center',
+    fontSize: 28,
+    position: 'absolute',
+    textAlign: 'center',
+    width: '50%',
+    marginLeft:'20%',
+    marginTop: 300,
+    
+  },
+  sosButton:{
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 50,
+    height: 100,
+    width: '30%',
+    marginVertical: '100%',
+    marginLeft: 30,
+    marginLeft:'35%',
+    backgroundColor: 'red',
+    
+  },
+  sosText:{
+    color: 'white',
+    fontSize: 30,
+    fontWeight: 'bold',
+  }
 });
 
 export default App;
