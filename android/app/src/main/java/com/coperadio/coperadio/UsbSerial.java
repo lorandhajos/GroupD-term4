@@ -38,6 +38,11 @@ public class UsbSerial extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
+  public boolean isDeviceConnected() {
+    return port != null;
+  }
+
+  @ReactMethod
   public void openDevice() {
     Activity activity = getCurrentActivity();
     if (activity == null) {
