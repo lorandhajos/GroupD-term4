@@ -55,7 +55,6 @@ function FirstTimeSetupScreen({navigation}) {
 }
 
 function App() {
-  
   return (
     <SafeAreaProvider>
       <StatusBar style="auto" />
