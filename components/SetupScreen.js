@@ -1,9 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, ImageBackground, Pressable } from 'react-native';
 
 function SetupScreen({navigation}) {
 
-    const image = require('./assets/setupImage.png');
+    const image = require('../assets/setupImage.png');
   
     return (
         <View style={styles.container}>
@@ -12,7 +12,7 @@ function SetupScreen({navigation}) {
                     <Pressable style={styles.communicationButton} onPress={ () => navigation.navigate('Home')}>
                         <Text style={styles.startCommunication}>Start communication</Text>
                     </Pressable>
-                    <Pressable style={styles.settingButton} onPress={ () => navigation.navigate('Home')}>
+                    <Pressable style={styles.settingButton} onPress={ () => navigation.navigate('ChangeRegionScreen')}>
                         <Text style={styles.startCommunication}>Settings</Text>
                     </Pressable>
                     <Text style={styles.inspirationQuote}>“JOBS FILL YOUR POCKETS, BUT ADVENTURES FILL YOUR SOUL.”</Text>
@@ -99,5 +99,5 @@ function SetupScreen({navigation}) {
       fontWeight: 'bold',
     }
   });
+
   export default SetupScreen;
-  
