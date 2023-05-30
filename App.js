@@ -6,8 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import { useState, useEffect } from 'react';
-import { HomeScreen, DetailsScreen } from './components'
-import SetupScreen from './components/SetupScreen';
+import { HomeScreen, DetailsScreen, SetupScreen } from './components';
 
 const Stack = createNativeStackNavigator();
 
