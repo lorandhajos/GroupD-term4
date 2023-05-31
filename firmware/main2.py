@@ -3,9 +3,6 @@ from collections import namedtuple
 from machine import UART, Pin
 import struct
 
-from circuitpython_typing import WriteableBuffer, ReadableBuffer
-#we need to fix that
-
 class ModemConfig():
     Bw125Cr45Sf128   = (0x72, 0x74, 0x04)
     Bw500Cr45Sf128   = (0x92, 0x74, 0x04)
@@ -114,7 +111,7 @@ MODE_TX = 0x03
 MODE_RXCONTINUOUS = 0x05
 MODE_CAD = 0x07
 
-def read_into(address:int, buf: WriteableBuffer, length: Optional[int] = None) -> None:
+def read_into(address:int, buf: bytearray, length: Optional[int] = None) -> None:
     pass
     #if length is None:
         #length = len(buf)

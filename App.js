@@ -19,7 +19,7 @@ function App(navigation) {
           <Stack.Screen name="Home" component={HomeScreen}
             options={{
               headerRight: () => (
-                <Pressable onPress={ () => navigation.navigate('SetupScreen')}>
+                <Pressable onPress={() => navigation.navigate('ChangeRegion')}>
                   <Entypo name="dots-three-vertical" size={15} color="black" />
                 </Pressable>
               ),
