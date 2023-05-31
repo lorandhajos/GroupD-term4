@@ -9,7 +9,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 
 const Stack = createNativeStackNavigator();
 
-function App(navigation) {
+function App() {
   return (
     <SafeAreaProvider>
       <StatusBar style="auto" />
@@ -19,8 +19,8 @@ function App(navigation) {
           <Stack.Screen name="Home" component={HomeScreen}
             options={{
               headerRight: () => (
-                <Pressable onPress={() => navigation.navigate('ChangeRegion')}>
-                  <Entypo name="dots-three-vertical" size={15} color="black" />
+                <Pressable onPress={() => navigation.navigate('SetupScreen')}>
+                  <Entypo name="dots-three-vertical" size={20} color="blue" />
                 </Pressable>
               ),
             }}/>
