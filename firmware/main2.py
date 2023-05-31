@@ -292,39 +292,35 @@ def send(data, destination, node, identifier, flags):
     # Clear interrupt.
     write_u8(REG_12_IRQ_FLAGS, 0xFF)
 
-def receive(
-        keep_listening: bool = True, with_header: bool = False, with_ack: bool = False, ack_delay: Optional[float] = 0.001, timeout: Optional[float] = 2
-    ) -> Optional[bytearray]:
-    timed_out = False
-    
-    variables[REG_01_OP_MODE]["Mode"] = RX_MODE
-    
+def receive(keep_listening = True, with_header = False):
     packet = None
     
-    if not timed_out:
-        fifo_length = read_u8(REG_13_RX_NB_BYTES)
+    fifo_length = read_u8(REG_13_RX_NB_BYTES)
+    
+    if fifo_length > 0:
+        current_address = read_u8(REG_10_FIFO_RX_CURRENT_ADDR)
+        write_u8(REG_0D_FIFO_ADDR_PTR, current_address)
+        packet = bytearray(fifo_length)
+
+        # Read the packet.
+        read_into(REG_00_FIFO, packet)
         
-        if fifo_length > 0:
-            current_address = read_u8(REG_10_FIFO_RX_CURRENT_ADDR)
-            write_u8(REG_0D_FIFO_ADDR_PTR, current_address)
-            packet = bytearray(fifo_length)
-            
-            if fifo_length < 5:
-                packet = None
-            else:
-                #We check if broadcast adress is the first register of the packet, Not sure weather this is correct???????
-                if packet[0] == REG_34_BROADCAST_ADRS:
-                    packet = None
-                elif with_ack and ((packet[3] ==0) and packet[0] != REG_34_BROADCAST_ADRS):
-                    
-                    if ack_delay is not None:
-                        time.sleep(ack_delay)
-                        #delay to send back
-                        send(b"!", packet[1], packet[0], packet[2], packet[3])
-            
-    
-    
-    
+        write_u8(REG_12_IRQ_FLAGS, 0xFF)
+        if fifo_length < 5:
+            packet = None
+        else:
+            if with_header:
+                packet = packet[4:]
+
+        # Listen again if necessary and return the result packet.
+        if keep_listening:
+            variables[REG_01_OP_MODE]["Mode"] = RX_MODE
+        else:
+            variables[REG_01_OP_MODE]["Mode"] = STANDBY_MODE
+        # Clear interrupt.
+        write_u8(REG_12_IRQ_FLAGS, 0xFF)
+        return packet
+
 # ========== Variables ==========
 #
 # 0x00 - 0x64 FSK/OOK Mode Registers
@@ -439,4 +435,11 @@ register_bits.transmit()
 for i in range(20):
     send(b'Chto-nibud', 1, 1, 1, 1)
     print("tr")
+    time.sleep(1)
+
+variables[REG_01_OP_MODE]["Mode"] = RX_MODE
+
+while True:
+    receive()
+    print("rec")
     time.sleep(1)
