@@ -297,6 +297,10 @@ def receive(
     ) -> Optional[bytearray]:
     timed_out = False
     
+    variables[REG_01_OP_MODE]["Mode"] = RX_MODE
+    
+    packet = None
+    
     if not timed_out:
         fifo_length = read_u8(REG_13_RX_NB_BYTES)
         
@@ -316,7 +320,7 @@ def receive(
                     if ack_delay is not None:
                         time.sleep(ack_delay)
                         #delay to send back
-                    send(b"!", packet[1], packet[0], packet[2], packet[3])
+                        send(b"!", packet[1], packet[0], packet[2], packet[3])
             
     
     
@@ -376,6 +380,9 @@ print("Uart initialized! Waiting for module to boot up...")
 version = read_u8(REG_42_VERSION)
 print("Version: ", version)
 
+while version!=18:
+    time.sleep(1)
+    print("sleepy time")
 if version != 18:
     raise RuntimeError("Unexpected RFM9x version!")
 
@@ -423,9 +430,13 @@ variables[REG_26_MODEM_CONFIG3]["AgcAutoOn"] = agc
 # Set transmit power to 13 dBm, a safe value any module supports.
 tx_power(13)
 
-send(b'Hello', 0, 0, 0, 0)
 
 print("Done!")
 
 register_bits = RegisterBits(0, 0, 4)
-register_bits.listen()
+register_bits.transmit()
+
+for i in range(20):
+    send(b'Chto-nibud', 1, 1, 1, 1)
+    print("tr")
+    time.sleep(1)
