@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, ToastAndroid, Tes } from 'react-native';
+import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, ToastAndroid } from 'react-native';
+import { Entypo } from '@expo/vector-icons'; 
 
 const {UsbSerial} = NativeModules;
 
@@ -20,6 +21,18 @@ const Item = ({item, navigation}) => (
 );
 
 const HomeScreen = ({navigation}) => {
+  const [count, setCount] = React.useState(0);
+
+  React.useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable onPress={() => navigation.navigate('ChangeRegion')}>
+          <Entypo name="dots-three-vertical" size={15} color="black" />
+        </Pressable>
+      ),
+    });
+  }, [navigation]);
+
   if (UsbSerial.isDeviceConnected()) {
     ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
   } else {
@@ -28,11 +41,11 @@ const HomeScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-        <FlatList
-          data={contacts}
-          renderItem={({item}) => <Item item={item} navigation={navigation} />}
-          keyExtractor={item => item.id}
-        />
+      <FlatList
+        data={contacts}
+        renderItem={({item}) => <Item item={item} navigation={navigation} />}
+        keyExtractor={item => item.id}
+      />
     </View>
   );
 }
