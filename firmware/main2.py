@@ -111,10 +111,18 @@ MODE_TX = 0x03
 MODE_RXCONTINUOUS = 0x05
 MODE_CAD = 0x07
 
-def read_into(address:int, buf: bytearray, length: Optional[int] = None) -> None:
-    pass
-    #if length is None:
-        #length = len(buf)
+def read_into(address, buf, length):
+    if length is None:
+        length = len(buf)
+    
+    uart.write(b'R')
+    uart.write(struct.pack("b", address & ~0x80))
+    uart.write(b"\xff")
+
+    while True:
+        if uart.any():
+            buf = struct.unpack("B", uart.read())[0]
+            return
 
 def read_u8(register):
     uart.write(b'R')
