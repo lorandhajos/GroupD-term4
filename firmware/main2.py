@@ -448,6 +448,8 @@ for i in range(20):
 variables[REG_01_OP_MODE]["Mode"] = RX_MODE
 
 while True:
-    receive()
-    print("rec")
-    time.sleep(1)
+    if (uart.any()):
+        data = uart.read()
+        if (data == b'I'):
+            receive()
+    time.sleep(0.1)
