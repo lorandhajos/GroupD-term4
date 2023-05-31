@@ -4,10 +4,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { HomeScreen, DetailsScreen, SetupScreen, ChangeRegion } from './components';
+import { Pressable } from 'react-native';
+import Entypo from '@expo/vector-icons/Entypo';
 
 const Stack = createNativeStackNavigator();
 
-function App() {
+function App(navigation) {
   return (
     <SafeAreaProvider>
       <StatusBar style="auto" />
@@ -17,7 +19,7 @@ function App() {
           <Stack.Screen name="Home" component={HomeScreen}
             options={{
               headerRight: () => (
-                <Pressable onPress={() => navigation.navigate('ChangeRegion')}>
+                <Pressable onPress={ () => navigation.navigate('SetupScreen')}>
                   <Entypo name="dots-three-vertical" size={15} color="black" />
                 </Pressable>
               ),
