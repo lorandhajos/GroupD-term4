@@ -424,6 +424,8 @@ for i in range(20):
     time.sleep(1)
 
 variables[REG_01_OP_MODE]["Mode"] = RX_MODE
+write_u8(REG_40_DIO_MAPPING1, 0x00)
+
 '''
 while True:
     if (uart.any()):
