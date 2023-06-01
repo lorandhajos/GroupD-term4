@@ -4,7 +4,7 @@ import { CommonActions } from '@react-navigation/native';
 import * as Databse from './Database';
 
 function FinishSetup(navigation) {
-  navigation.dispatch(state => {
+  navigation.dispatch(() => {
     return CommonActions.reset({
       routes: [
         { name: 'Home' },
