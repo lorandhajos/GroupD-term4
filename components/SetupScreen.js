@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ImageBackground, Pressable } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
+import * as Databse from './Database';
 
 function FinishSetup(navigation) {
   navigation.dispatch(state => {
@@ -15,6 +16,8 @@ function FinishSetup(navigation) {
 
 function SetupScreen({navigation}) {
   const image = require('../assets/setupImage.png');
+
+  Databse.initDatabase();
 
   return (
     <View style={styles.container}>
