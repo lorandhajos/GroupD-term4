@@ -23,9 +23,6 @@ function SetupScreen({navigation}) {
           <Pressable style={styles.communicationButton} onPress={() => FinishSetup(navigation)}>
             <Text style={styles.startCommunication}>Start communication</Text>
           </Pressable>
-          <Pressable style={styles.settingButton} onPress={ () => navigation.navigate('ChangeRegion')}>
-            <Text style={styles.startCommunication}>Settings</Text>
-          </Pressable>
           <Text style={styles.inspirationQuote}>“JOBS FILL YOUR POCKETS, BUT ADVENTURES FILL YOUR SOUL.”</Text>
           <Pressable style={styles.sosButton}>
             <Text style={styles.sosText}>SOS</Text>

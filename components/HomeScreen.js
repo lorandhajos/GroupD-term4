@@ -1,8 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, ToastAndroid } from 'react-native';
+import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, ToastAndroid, Alert } from 'react-native';
 import { Entypo } from '@expo/vector-icons'; 
+import {  Menu, MenuProvider, MenuOptions, MenuTrigger, renderers, MenuOption, } from 'react-native-popup-menu';
 
 const {UsbSerial} = NativeModules;
+
 
 const contacts = [
   { id: 1, name: 'John Doe', lastMessage: 'Hello!', time: '11:00' },
@@ -26,9 +28,15 @@ const HomeScreen = ({navigation}) => {
   React.useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <Pressable onPress={() => navigation.navigate('ChangeRegion')}>
-          <Entypo name="dots-three-vertical" size={15} color="black" />
-        </Pressable>
+        <Menu>
+          <MenuTrigger>
+            <Entypo name="dots-three-vertical" size={20} color="black" />
+          </MenuTrigger>
+          <MenuOptions>
+            <MenuOption onSelect={() => navigation.navigate('ChangeRegion')} text='Settings'>
+            </MenuOption>
+          </MenuOptions>
+        </Menu>
       ),
     });
   }, [navigation]);
@@ -55,6 +63,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+
   item: {
     padding: 8,
     marginVertical: 8,
