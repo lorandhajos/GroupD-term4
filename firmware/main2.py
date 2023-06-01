@@ -164,26 +164,6 @@ class RegisterBits:
         reg_value &= ~self._mask
         reg_value |= (val & 0xFF) << self._offset
         write_u8(self._address, reg_value)
-    
-    def reset(self) -> None:
-        self._reset.value = False
-        time.sleep(0.0001)
-        self._reset.value = True
-        time.sleep(0.005)
-    
-    def idle(self) -> None:
-        self.operation_mode = STANDBY_MODE
-        
-    def sleep(self) -> None:
-        self.operation_mode = SLEEP_MODE
-    
-    def listen(self) -> None:
-        self.operation_mode = RX_MODE
-        self.dio0_mapping = 0b00
-        
-    def transmit(self) -> None:
-        self.operation_mode = TX_MODE
-        self.dio0_mapping = 0b01
 
 bw_bins = (7800, 10400, 15600, 20800, 31250, 41700, 62500, 125000, 250000)
 
@@ -437,8 +417,6 @@ tx_power(13)
 
 print("Done!")
 
-register_bits = RegisterBits(0, 0, 4)
-register_bits.transmit()
 
 for i in range(20):
     send(b'Chto-nibud', 1, 1, 1, 1)
@@ -446,10 +424,11 @@ for i in range(20):
     time.sleep(1)
 
 variables[REG_01_OP_MODE]["Mode"] = RX_MODE
-
+'''
 while True:
     if (uart.any()):
         data = uart.read()
         if (data == b'I'):
             receive()
     time.sleep(0.1)
+    '''
