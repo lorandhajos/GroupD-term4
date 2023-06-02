@@ -4,11 +4,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { HomeScreen, DetailsScreen, SetupScreen, ChangeRegion } from './components';
+import { MenuProvider } from 'react-native-popup-menu';
 
 const Stack = createNativeStackNavigator();
 
 function App() {
   return (
+    <MenuProvider>
     <SafeAreaProvider>
       <StatusBar style="auto" />
       <NavigationContainer>
@@ -20,6 +22,7 @@ function App() {
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
+    </MenuProvider>
   );
 }
 

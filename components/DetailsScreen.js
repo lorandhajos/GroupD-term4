@@ -7,15 +7,15 @@ function DetailsScreen({route}) {
   return (
     <View style={styles.container}>
       <View style={styles.messagesContainer}>
-          <Text key={1} style={styles.message}>
-            {message}
-          </Text>
+        <Text key={1} style={styles.message}>
+          {message}
+        </Text>
       </View>
       <View style={styles.inputContainer}>
-          <TextInput style={styles.input} placeholder="Message" />
-          <Pressable style={styles.sendButton}>
-            <Ionicons name="send" size={24} color="white" />
-          </Pressable>
+        <TextInput style={styles.input} placeholder="Message" />
+        <Pressable style={styles.sendButton}>
+          <Ionicons name="send" size={24} color="white" />
+        </Pressable>
       </View>
     </View>
   );

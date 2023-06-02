@@ -111,6 +111,19 @@ MODE_TX = 0x03
 MODE_RXCONTINUOUS = 0x05
 MODE_CAD = 0x07
 
+def read_into(address, buf, length):
+    if length is None:
+        length = len(buf)
+    
+    uart.write(b'R')
+    uart.write(struct.pack("b", address & ~0x80))
+    uart.write(b"\xff")
+
+    while True:
+        if uart.any():
+            buf = struct.unpack("B", uart.read())[0]
+            return
+
 def read_u8(register):
     uart.write(b'R')
     uart.write(struct.pack("b", register & ~0x80))
@@ -267,6 +280,35 @@ def send(data, destination, node, identifier, flags):
     # Clear interrupt.
     write_u8(REG_12_IRQ_FLAGS, 0xFF)
 
+def receive(keep_listening = True, with_header = False):
+    packet = None
+    
+    fifo_length = read_u8(REG_13_RX_NB_BYTES)
+    
+    if fifo_length > 0:
+        current_address = read_u8(REG_10_FIFO_RX_CURRENT_ADDR)
+        write_u8(REG_0D_FIFO_ADDR_PTR, current_address)
+        packet = bytearray(fifo_length)
+
+        # Read the packet.
+        read_into(REG_00_FIFO, packet)
+        
+        write_u8(REG_12_IRQ_FLAGS, 0xFF)
+        if fifo_length < 5:
+            packet = None
+        else:
+            if with_header:
+                packet = packet[4:]
+
+        # Listen again if necessary and return the result packet.
+        if keep_listening:
+            variables[REG_01_OP_MODE]["Mode"] = RX_MODE
+        else:
+            variables[REG_01_OP_MODE]["Mode"] = STANDBY_MODE
+        # Clear interrupt.
+        write_u8(REG_12_IRQ_FLAGS, 0xFF)
+        return packet
+
 # ========== Variables ==========
 #
 # 0x00 - 0x64 FSK/OOK Mode Registers
@@ -322,6 +364,9 @@ print("Uart initialized! Waiting for module to boot up...")
 version = read_u8(REG_42_VERSION)
 print("Version: ", version)
 
+while version!=18:
+    time.sleep(1)
+    print("sleepy time")
 if version != 18:
     raise RuntimeError("Unexpected RFM9x version!")
 
@@ -369,6 +414,23 @@ variables[REG_26_MODEM_CONFIG3]["AgcAutoOn"] = agc
 # Set transmit power to 13 dBm, a safe value any module supports.
 tx_power(13)
 
-send(b'Hello', 0, 0, 0, 0)
 
 print("Done!")
+
+
+for i in range(20):
+    send(b'Chto-nibud', 1, 1, 1, 1)
+    print("tr")
+    time.sleep(1)
+
+variables[REG_01_OP_MODE]["Mode"] = RX_MODE
+write_u8(REG_40_DIO_MAPPING1, 0x00)
+
+'''
+while True:
+    if (uart.any()):
+        data = uart.read()
+        if (data == b'I'):
+            receive()
+    time.sleep(0.1)
+    '''
