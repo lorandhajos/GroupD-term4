@@ -1,16 +1,17 @@
 import React from 'react';
 import { Picker } from '@react-native-picker/picker';
 import { useState} from 'react';
-import { Text, View } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
+
 
 function ChangeRegion({navigation}){
   const [selectedLanguage, setSelectedLanguage] = useState();
   return (
-    <View>
-      <Text>
+    <View  >
+      <Text style={styles.text}>
         {'Select Region'}
       </Text>
-      <Picker
+      <Picker style={styles.selectedLanguage}
      selectedValue={selectedLanguage}
   onValueChange={(itemValue, itemIndex) =>
     setSelectedLanguage(itemValue)
@@ -23,5 +24,17 @@ function ChangeRegion({navigation}){
   );
 
 }
+const styles = StyleSheet.create({
+  text: {
+    paddingLeft:'40%',
+    width: '100%',
+    paddingBottom:'10%',
+    paddingTop:'2%',
+  },
+  selectedLanguage:{
+    alignSelf:'auto',
+    
+  },
 
+});
 export default ChangeRegion;
