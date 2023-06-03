@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, View, ImageBackground, Pressable } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
 import * as Databse from './Database';
+import * as SecureStore from 'expo-secure-store';
+import * as eccrypto from 'eccrypto';
 
 function FinishSetup(navigation) {
   navigation.dispatch(() => {
@@ -14,7 +16,26 @@ function FinishSetup(navigation) {
   });
 }
 
+function generatePrivateKey() {
+  const privKey = eccrypto.generatePrivate();
+  SecureStore.setItemAsync("privKey", privKey.toString('hex'));
+}
+
 function SetupScreen({navigation}) {
+  SecureStore.getItemAsync("privKey").then((value) => {
+    if (value == null) {
+      console.log("No private key found, generating new one");
+      try {
+        generatePrivateKey();
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      console.log("Private key found");
+      FinishSetup(navigation);
+    }
+  });
+
   const image = require('../assets/setupImage.png');
 
   Databse.initDatabase();
