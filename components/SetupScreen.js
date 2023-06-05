@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ImageBackground, Pressable } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Databse from './Database';
 import * as SecureStore from 'expo-secure-store';
 import * as eccrypto from 'eccrypto';
@@ -21,6 +22,14 @@ function generatePrivateKey() {
   SecureStore.setItemAsync("privKey", privKey.toString('hex'));
 }
 
+const setInitialized = async (value) => {
+  try {
+    await AsyncStorage.setItem('isInitialized', value)
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 function SetupScreen({navigation}) {
   SecureStore.getItemAsync("privKey").then((value) => {
     if (value == null) {
@@ -39,6 +48,8 @@ function SetupScreen({navigation}) {
   const image = require('../assets/setupImage.png');
 
   Databse.initDatabase();
+
+  setInitialized("1");
 
   return (
     <View style={styles.container}>

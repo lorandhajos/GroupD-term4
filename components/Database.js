@@ -1,9 +1,9 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SQLite from 'expo-sqlite';
 import * as FileSystem from 'expo-file-system';
 
 const db = openDatabase();
 var firstRun = false;
-var initialized = false;
 
 function openDatabase() {
   FileSystem.getInfoAsync(FileSystem.documentDirectory + 'SQLite').then((info) => {
@@ -39,11 +39,18 @@ export const initDatabase = () => {
     // TODO: Remove this before release
     fillDatabase();
   }
-  initialized = true;
 }
 
-export const isInitialized = () => {
-  return initialized;
+export const isInitialized = async () => {
+  try {
+    const value = await AsyncStorage.getItem('isInitialized')
+    if(value !== null) {
+      return true;
+    }
+    return false;
+  } catch(e) {
+    return false;
+  }
 }
 
 export const fillDatabase = () => {

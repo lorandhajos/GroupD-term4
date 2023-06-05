@@ -4,7 +4,6 @@ import { Entypo } from '@expo/vector-icons';
 import { Menu, MenuOptions, MenuTrigger, MenuOption } from 'react-native-popup-menu';
 import { CommonActions } from '@react-navigation/native';
 import * as Databse from './Database';
-import * as SecureStore from 'expo-secure-store';
 
 const { UsbSerial } = NativeModules;
 
@@ -29,25 +28,21 @@ const Item = ({item, navigation}) => (
 const HomeScreen = ({navigation}) => {
   const [messages, setMessages] = React.useState();
 
-  SecureStore.getItemAsync("privKey").then((value) => {
-    if (value == null) {
-      console.log("No private key found, redirecting to setup screen");
-      navigation.dispatch(() => {
-        return CommonActions.reset({
-          routes: [
-            { name: 'SetupScreen' },
-          ],
-          index: 0,
-        });
-      });
-    }
-    return;
-  });
-
   React.useEffect(() => {
-    if (Databse.isInitialized()) {
-      Databse.getHomeScreenData(setMessages);
-    }
+    Databse.isInitialized().then((value) => {
+      if (value) {
+        Databse.getHomeScreenData(setMessages);
+      } else {
+        navigation.dispatch(() => {
+          return CommonActions.reset({
+            routes: [
+              { name: 'SetupScreen' },
+            ],
+            index: 0,
+          });
+        });
+      }
+    });
 
     if (UsbSerial.isDeviceConnected()) {
       ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
