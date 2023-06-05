@@ -3,6 +3,7 @@ import * as FileSystem from 'expo-file-system';
 
 const db = openDatabase();
 var firstRun = false;
+var initialized = false;
 
 function openDatabase() {
   FileSystem.getInfoAsync(FileSystem.documentDirectory + 'SQLite').then((info) => {
@@ -38,6 +39,11 @@ export const initDatabase = () => {
     // TODO: Remove this before release
     fillDatabase();
   }
+  initialized = true;
+}
+
+export const isInitialized = () => {
+  return initialized;
 }
 
 export const fillDatabase = () => {

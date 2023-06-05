@@ -15,10 +15,10 @@ function App() {
       <StatusBar style="auto" />
       <NavigationContainer>
         <Stack.Navigator screenOptions={{animation: "slide_from_right"}}>
-          <Stack.Screen name="SetupScreen" component={SetupScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Details" component={DetailsScreen} options={({ route }) => ({ title: route.params.name })}/>
           <Stack.Screen name="ChangeRegion" component={ChangeRegion}/>
+          <Stack.Screen name="SetupScreen" component={SetupScreen} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
