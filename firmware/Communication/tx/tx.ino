@@ -8,9 +8,10 @@
 //array{comand, adres, flags, message}
 //arrayElse{comand, setToWhat}
 
-constexpr int comandSned = 1;
-constexpr int comandChangeMode = 3;
-constexpr int comandSOS = 9;
+constexpr int comnandSend = 1;
+constexpr int comnandChangeMode = 3;
+constexpr int conmandSOS = 9;
+constexpr int conmandChangeFreq = 27;
 
 constexpr int flagEmpty = 2;
 constexpr int flagSnedConf = 4;
@@ -30,6 +31,7 @@ constexpr int errorFailedConnect = 43;
 constexpr int errorFailedSerial = 44;
 constexpr int errorFailedChangeFreq = 45;
 constexpr int errorFailedModeChange = 46;
+constexpr int errorUnexpectedCommand = 47;
 
 int LED = 13;
 
@@ -48,7 +50,7 @@ void setup(){
     }
   }
 
-  // wait until serial console is open, remove if not tethered to computer
+  // wait until serial console is open
   Serial.begin(115200);
   delay(100);
 
@@ -65,7 +67,23 @@ void setup(){
 void loop(){
   if(checkConectioin()){
     if(checkSerial()){
-          //main
+          int action = Serial.read();
+          if(action = comnandSend){
+
+          }
+          else if(action = comnandChangeMode){
+
+          }
+          else if(action = conmandSOS){
+
+          }
+          else if(action = conmandChangeFreq){
+
+          }
+          else{
+            throwErrorToPhone(errorUnexpectedCommand);
+            break;
+          }
     }
   }
   else{
