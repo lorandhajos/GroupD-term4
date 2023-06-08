@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, ToastAndroid, Alert } from 'react-native';
-import { Entypo } from '@expo/vector-icons'; 
-import {  Menu, MenuProvider, MenuOptions, MenuTrigger, renderers, MenuOption, } from 'react-native-popup-menu';
+import { Entypo, Feather } from '@expo/vector-icons'; 
+import {  Menu, MenuOptions, MenuTrigger, MenuOption, } from 'react-native-popup-menu';
+import { Button, Overlay } from 'react-native-elements';
+import { Modal, Portal, PaperProvider } from 'react-native-paper';
 
 const {UsbSerial} = NativeModules;
-
 
 const contacts = [
   { id: 1, name: 'John Doe', lastMessage: 'Hello!', time: '11:00' },
@@ -33,8 +34,7 @@ const HomeScreen = ({navigation}) => {
             <Entypo name="dots-three-vertical" size={20} color="black" />
           </MenuTrigger>
           <MenuOptions>
-            <MenuOption onSelect={() => navigation.navigate('ChangeRegion')} text='Settings'>
-            </MenuOption>
+            <MenuOption onSelect={() => navigation.navigate('ChangeRegion')} text='Settings'/>
           </MenuOptions>
         </Menu>
       ),
@@ -54,14 +54,53 @@ const HomeScreen = ({navigation}) => {
         renderItem={({item}) => <Item item={item} navigation={navigation} />}
         keyExtractor={item => item.id}
       />
+      <PaperProvider>
+        <Portal>
+            <Menu style={styles.modalFloat}>
+              <MenuTrigger>
+                <View>
+                  <Feather name="alert-octagon" size={50} color="black" />
+                </View>
+              </MenuTrigger>
+              <MenuOptions>
+                <PaperProvider>
+                    <Pressable style={styles.sosButton} onPress={(showAlert)}>
+                      <Text style={styles.sosText}>SOS</Text>
+                    </Pressable>
+                </PaperProvider>
+              </MenuOptions>
+            </Menu>
+        </Portal>
+      </PaperProvider>
     </View>
   );
 }
+
+const showAlert = () =>{
+  Alert.alert(
+    'SOS Message',
+    'Are you sure you want to send message',
+    [
+      {
+        text: 'Yes',
+        onPress: () => Alert.alert('SOS has been sent'),
+      },
+
+      {
+        text: 'No',
+        onPress: () => Alert.alert('SOS has been cancelled'),
+      },
+    ],
+  );
+  }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  menuContainer: {
+    opacity: 2,
   },
 
   item: {
@@ -83,6 +122,23 @@ const styles = StyleSheet.create({
   },
   time: {
     height: '100%',
+  },
+  sosButton:{
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 300,
+    width: '100%',
+    backgroundColor: 'red',
+  },
+  sosText:{
+    color: 'white',
+    fontSize: 50,
+    fontWeight: 'bold',
+  },
+  modalFloat:{
+    alignItems: 'flex-end',
+    marginRight: 10,
+    marginVertical: '20%',
   },
 });
 

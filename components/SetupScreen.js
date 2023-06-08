@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, Text, View, ImageBackground, Pressable } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ImageBackground, Pressable, TextInput } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
 
 function FinishSetup(navigation) {
@@ -14,19 +14,24 @@ function FinishSetup(navigation) {
 }
 
 function SetupScreen({navigation}) {
+  const [message, setMessage] = useState('');
   const image = require('../assets/setupImage.png');
 
   return (
     <View style={styles.container}>
       <View style={styles.setupScreen}>
         <ImageBackground source={image} resize='cover' style={styles.setupImage}>
-          <Pressable style={styles.communicationButton} onPress={() => FinishSetup(navigation)}>
-            <Text style={styles.startCommunication}>Start communication</Text>
-          </Pressable>
-          <Text style={styles.inspirationQuote}>“JOBS FILL YOUR POCKETS, BUT ADVENTURES FILL YOUR SOUL.”</Text>
-          <Pressable style={styles.sosButton}>
-            <Text style={styles.sosText}>SOS</Text>
-          </Pressable>
+        <Text style={styles.chooseUsername}>Choose Username</Text>
+            <TextInput
+                style={styles.input}
+                id='message'
+                placeholder="Enter Username"
+                value={message}
+                onChange={(event) => setMessage(event)}
+            />
+            <Pressable style={styles.communicationButton} disabled={!message} onPress={() => FinishSetup(navigation)}>
+                <Text style={styles.startCommunication}>Submit</Text>
+            </Pressable>
         </ImageBackground>
       </View>
     </View>
@@ -36,74 +41,48 @@ function SetupScreen({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   name: {
     fontWeight: 'bold',
     fontSize: 18,
   },
-  time: {
-    height: '100%',
-  },
   setupScreen:{
     flex: 1,
+    width: '100%',
   },
   setupImage: {
     flex: 1,
   },
-  communicationButton:{
-    backgroundColor: '#f5f5f5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    color: 'black',
-    height: '5%',
-    width: '60%',
-    marginLeft:'20%',
-    marginVertical: '10%',
+  chooseUsername:{
+    fontSize: 30,
+    marginBottom: 30,
+    marginLeft: '17%',
+    fontWeight: 'bold',
+    marginTop: 200,
   },
-  settingButton:{
-    backgroundColor: '#f5f5f5',
+  communicationButton:{
+    backgroundColor: '#F55E5E',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 15,
+    width: '80%',
+    height: 40,
     color: 'black',
-    height: '5%',
-    width: '60%',
-    marginLeft:'20%',
+    marginVertical: '10%',
+    marginLeft: '10%',
   },
   startCommunication:{
     fontWeight: 'bold',
     fontSize: 20,
   },
-  inspirationQuote: {
-    flex: 1,
-    color: 'white',
-    alignItems: 'center',
-    fontSize: 28,
-    position: 'absolute',
-    textAlign: 'center',
-    width: '50%',
-    marginLeft:'20%',
-    marginTop: 300,
-    
+  input: {
+      backgroundColor: '#f5f5f5',
+      width: '80%',
+      height: 40,
+      borderWidth: 1,
+      padding: 10,
+      marginLeft: '10%',
   },
-  sosButton:{
-    backgroundColor: '#f5f5f5',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 50,
-    height: 100,
-    width: '30%',
-    marginVertical: '100%',
-    marginLeft: 30,
-    marginLeft:'35%',
-    backgroundColor: 'red',
-    
-  },
-  sosText:{
-    color: 'white',
-    fontSize: 30,
-    fontWeight: 'bold',
-  }
 });
 
 export default SetupScreen;
