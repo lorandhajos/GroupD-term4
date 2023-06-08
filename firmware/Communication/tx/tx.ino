@@ -1,5 +1,6 @@
 #include <SPI.h>
 #include <RH_RF95.h>
+#include <Arduino.h>
 
 #define RFM95_CS    8
 #define RFM95_INT   7
@@ -32,6 +33,9 @@ constexpr int errorFailedSerial = 44;
 constexpr int errorFailedChangeFreq = 45;
 constexpr int errorFailedModeChange = 46;
 constexpr int errorUnexpectedCommand = 47;
+
+const int ASCInum[] = {10, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57};
+const int UTFnum[] = {-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
 int LED = 13;
 
@@ -70,27 +74,34 @@ void setup(){
   }
 }
 void loop(){
+  //count = 0;
   if(checkConectioin()){
     if(checkSerial() && count == 0){
-      char action = (char)Serial.read();
-      //Serial.println(action);
+      byte buffer = Serial.read();
+      int action = conversion(buffer);
+      Serial.println(action);
+
       if(action == comnandSend && count == 0){
-        Serial.println("We recieved comand");
+        Serial.println("We recieved comand send");
         count++;
       }
+
       else if(action == comnandChangeMode && count == 0){
         Serial.println("We recieved mode change");
         count++;
       }
+
       else if(action == conmandSOS && count == 0){
         Serial.println("We recieved SOS");
         count++;
       }
+
       else if(action == conmandChangeFreq && count == 0){
         Serial.println("We recieved frequency");
         count++;
       }
-      else if(count == 0){
+
+      else if(count == 0 && action == -2){
         Serial.println("We recieved inapropriate");
         count++;
         throwErrorToPhone(errorUnexpectedCommand);
@@ -100,17 +111,6 @@ void loop(){
   else{
 
   }
-
-
-
-
-
-
-  //digitalWrite(LED, LOW);
-  //if(Serial.available()>0){
-    //digitalWrite(LED, HIGH);
-    //delay(100);
-  //}
 }
 
 bool checkSerial(){
@@ -118,6 +118,16 @@ bool checkSerial(){
     return true;
   }
   return false;
+}
+
+int conversion(int buffer){
+  for(int i = 0; i<11; i++){
+    if(buffer == ASCInum[i]){
+      buffer = UTFnum[i];
+      return buffer;
+    }
+  }
+  return -2;
 }
 
 //void determineComand(){
