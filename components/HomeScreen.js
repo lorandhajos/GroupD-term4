@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, ToastAndroid } from 'react-native';
-import { Entypo } from '@expo/vector-icons'; 
+import { Entypo, Feather } from '@expo/vector-icons'; 
 import { Menu, MenuOptions, MenuTrigger, MenuOption } from 'react-native-popup-menu';
 import { CommonActions } from '@react-navigation/native';
 import * as Databse from './Database';
@@ -67,24 +67,18 @@ const HomeScreen = ({navigation}) => {
           keyExtractor={item => item.id}
         />
       )}
-      <PaperProvider>
-        <Portal>
-            <Menu style={styles.modalFloat}>
-              <MenuTrigger>
-                <View>
-                  <Feather name="alert-octagon" size={50} color="black" />
-                </View>
-              </MenuTrigger>
-              <MenuOptions>
-                <PaperProvider>
-                    <Pressable style={styles.sosButton} onPress={(showAlert)}>
-                      <Text style={styles.sosText}>SOS</Text>
-                    </Pressable>
-                </PaperProvider>
-              </MenuOptions>
-            </Menu>
-        </Portal>
-      </PaperProvider>
+      <Menu style={styles.modalFloat}>
+        <MenuTrigger>
+          <View>
+            <Feather name="alert-octagon" size={50} color="black" />
+          </View>
+        </MenuTrigger>
+        <MenuOptions>
+          <Pressable style={styles.sosButton} onPress={(showAlert)}>
+            <Text style={styles.sosText}>SOS</Text>
+          </Pressable>
+        </MenuOptions>
+      </Menu>
     </View>
   );
 }
