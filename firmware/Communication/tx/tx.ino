@@ -36,6 +36,7 @@ constexpr int errorUnexpectedCommand = 47;
 
 const int ASCInum[] = {10, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57};
 const int UTFnum[] = {-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+const int ASCIcoma = 44;
 
 int LED = 13;
 
@@ -74,16 +75,27 @@ void setup(){
   }
 }
 void loop(){
-  //count = 0;
   if(checkConectioin()){
+    count = 0;
     if(checkSerial() && count == 0){
-      byte buffer = Serial.read();
-      int action = conversion(buffer);
-      Serial.println(action);
+      byte buffer = readTillComa();
+      //int action = conversion(buffer);
+      int action = 8;
+      Serial.println(buffer);
 
       if(action == comnandSend && count == 0){
         Serial.println("We recieved comand send");
         count++;
+        
+        if(count == 1){
+        byte buffer = Serial.read();
+        int addres = conversion(buffer);
+        Serial.println("This is the address");
+        Serial.println(addres);
+        }
+
+        byte buffer = Serial.read();
+        int flag = conversion(buffer);
       }
 
       else if(action == comnandChangeMode && count == 0){
@@ -123,18 +135,22 @@ bool checkSerial(){
 int conversion(int buffer){
   for(int i = 0; i<11; i++){
     if(buffer == ASCInum[i]){
-      buffer = UTFnum[i];
-      return buffer;
+      return UTFnum[i];
     }
   }
   return -2;
 }
 
-//void determineComand(){
-//  if(checkSerial()){
-//    for()
-//  }
-//}
+int readTillComa(){
+  String rtn;
+  while(true){
+    byte tmp = Serial.read();
+    if(tmp==ASCIcoma){
+      return rtn.toInt();
+    }
+    rtn.concat(String(conversion(tmp)));
+  }
+}
 
 void setFrequency(){
 
