@@ -76,26 +76,30 @@ void setup(){
 }
 void loop(){
   if(checkConectioin()){
-    count = 0;
+    //count = 0;
     if(checkSerial() && count == 0){
-      byte buffer = readTillComa();
-      //int action = conversion(buffer);
-      int action = 8;
-      Serial.println(buffer);
-
+      int action = readTillComa();
       if(action == comnandSend && count == 0){
         Serial.println("We recieved comand send");
         count++;
         
         if(count == 1){
-        byte buffer = Serial.read();
-        int addres = conversion(buffer);
-        Serial.println("This is the address");
-        Serial.println(addres);
-        }
+          int addres = readTillComa();
+          Serial.println("Addres is this");
+          Serial.println(addres);
+          count++;
+          
+          if(count==2){
+            int flag = readTillComa();
+            Serial.println("Flag is this");
+            Serial.println(flag);
+            count++;
 
-        byte buffer = Serial.read();
-        int flag = conversion(buffer);
+            if(count == 3){
+              //readPayload but need to find how to convert asci to utf
+            }
+          }
+        }
       }
 
       else if(action == comnandChangeMode && count == 0){
@@ -141,15 +145,24 @@ int conversion(int buffer){
   return -2;
 }
 
-int readTillComa(){
+String readPayload(){
+
+}
+
+int readTillComa(){//max 5 digits for some reason
   String rtn;
-  while(true){
-    byte tmp = Serial.read();
-    if(tmp==ASCIcoma){
-      return rtn.toInt();
+  byte buf = -1;
+  int tmp;
+  while(buf!=ASCIcoma || buf!=ASCInum[0]){
+    buf = Serial.read();
+    tmp = conversion(buf);
+    if(tmp == -2){
+      break;
     }
-    rtn.concat(String(conversion(tmp)));
+    rtn.concat(tmp);
   }
+  tmp = rtn.toInt();
+  return tmp;
 }
 
 void setFrequency(){
