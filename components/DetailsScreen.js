@@ -1,7 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, Pressable, FlatList } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Pressable, FlatList, ToastAndroid, NativeModules } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Databse from './Database';
+
+const { UsbSerial } = NativeModules;
 
 function formatTime(time) {
   const date = new Date(time);
@@ -20,6 +22,7 @@ const Item = ({item}) => (
 
 function DetailsScreen({route, navigation}) {
   const [messages, setMessages] = React.useState();
+  const [text, setText] = React.useState();
 
   React.useEffect(() => {
     Databse.getMessages(route.params.id, setMessages);
@@ -30,6 +33,19 @@ function DetailsScreen({route, navigation}) {
       title: route.params.name,
     });
   }, [navigation]);
+
+  React.useEffect(() => {
+    const value = UsbSerial.openDevice();
+
+    console.log(value);
+
+    if (UsbSerial.isDeviceConnected()) {
+      ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
+      console.log('Radio Module connected!');
+    } else {
+      ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
+    }
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -43,9 +59,11 @@ function DetailsScreen({route, navigation}) {
         )}
       </View>
       <View style={styles.inputContainer}>
-        <TextInput style={styles.input} placeholder="Message" />
+        <TextInput style={styles.input} placeholder="Message" onChangeText={(text) => setText(text)} />
         <Pressable style={styles.sendButton}>
-          <Ionicons name="send" size={24} color="white" />
+          <Ionicons name="send" size={24} color="white" onPress={ () =>
+            UsbSerial.write(text)
+          }/>
         </Pressable>
       </View>
     </View>

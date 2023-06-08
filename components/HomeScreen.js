@@ -5,8 +5,6 @@ import { Menu, MenuOptions, MenuTrigger, MenuOption } from 'react-native-popup-m
 import { CommonActions } from '@react-navigation/native';
 import * as Databse from './Database';
 
-const { UsbSerial } = NativeModules;
-
 function formatTime(time) {
   const date = new Date(time);
   const hours = date.getHours();
@@ -43,12 +41,6 @@ const HomeScreen = ({navigation}) => {
         });
       }
     });
-
-    if (UsbSerial.isDeviceConnected()) {
-      ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
-    } else {
-      ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
-    }
   }, []);
 
   React.useEffect(() => {
