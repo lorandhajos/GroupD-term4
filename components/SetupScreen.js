@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ImageBackground, Pressable, TextInput } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Databse from './Database';
+import * as SecureStore from 'expo-secure-store';
+import * as eccrypto from 'eccrypto';
 
 function FinishSetup(navigation) {
-  navigation.dispatch(state => {
+  navigation.dispatch(() => {
     return CommonActions.reset({
       routes: [
         { name: 'Home' },
@@ -13,9 +17,39 @@ function FinishSetup(navigation) {
   });
 }
 
+function generatePrivateKey() {
+  const privKey = eccrypto.generatePrivate();
+  SecureStore.setItemAsync("privKey", privKey.toString('hex'));
+}
+
+const setInitialized = async (value) => {
+  try {
+    await AsyncStorage.setItem('isInitialized', value)
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 function SetupScreen({navigation}) {
-  const [message, setMessage] = useState('');
+  SecureStore.getItemAsync("privKey").then((value) => {
+    if (value == null) {
+      console.log("No private key found, generating new one");
+      try {
+        generatePrivateKey();
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      console.log("Private key found");
+      FinishSetup(navigation);
+    }
+  });
+
   const image = require('../assets/setupImage.png');
+
+  Databse.initDatabase();
+
+  setInitialized("1");
 
   return (
     <View style={styles.container}>

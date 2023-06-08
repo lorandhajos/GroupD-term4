@@ -1,20 +1,69 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, Pressable } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Pressable, FlatList, ToastAndroid, NativeModules } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Databse from './Database';
 
-function DetailsScreen({route}) {
-  const { message } = route.params;
+const { UsbSerial } = NativeModules;
+
+function formatTime(time) {
+  const date = new Date(time);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  return `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+}
+
+const Item = ({item}) => (
+  <View style={styles.messageBox}>
+    <Text style={styles.message}>{item.message}</Text>
+    <Text style={styles.time}>{formatTime(item.time)}</Text>
+  </View>
+);
+
+function DetailsScreen({route, navigation}) {
+  const [messages, setMessages] = React.useState();
+  const [text, setText] = React.useState();
+
+  React.useEffect(() => {
+    Databse.getMessages(route.params.id, setMessages);
+  }, []);
+
+  React.useEffect(() => {
+    navigation.setOptions({
+      title: route.params.name,
+    });
+  }, [navigation]);
+
+  React.useEffect(() => {
+    const value = UsbSerial.openDevice();
+
+    console.log(value);
+
+    if (UsbSerial.isDeviceConnected()) {
+      ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
+      console.log('Radio Module connected!');
+    } else {
+      ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
+    }
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.messagesContainer}>
-        <Text key={1} style={styles.message}>
-          {message}
-        </Text>
+        {messages && (
+          <FlatList
+            data={messages}
+            renderItem={({item}) => <Item item={item} />}
+            keyExtractor={item => item.id}
+          />
+        )}
       </View>
       <View style={styles.inputContainer}>
-        <TextInput style={styles.input} placeholder="Message" />
+        <TextInput style={styles.input} placeholder="Message" onChangeText={(text) => setText(text)} />
         <Pressable style={styles.sendButton}>
-          <Ionicons name="send" size={24} color="white" />
+          <Ionicons name="send" size={24} color="white" onPress={ () =>
+            UsbSerial.write(text)
+          }/>
         </Pressable>
       </View>
     </View>
@@ -28,18 +77,20 @@ const styles = StyleSheet.create({
   },
   messagesContainer: {
     flex: 1,
-    padding: 10,
   },
-  message: {
+  messageBox: {
     paddingVertical: 5,
     paddingHorizontal: 10,
     backgroundColor: '#ffffff',
     borderRadius: 10,
     marginBottom: 10,
+    maxWidth: '80%',
+    alignSelf: 'flex-start',
+    margin: 10,
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 10,
+    padding: 8,
   },
   input: {
     flex: 1,
@@ -55,7 +106,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
+  time: {
+    fontSize: 10,
+    color: '#999999',
+    textAlign: 'right',
+  },
+  message: {
+    fontSize: 16,
+  },
 });
 
 export default DetailsScreen;
