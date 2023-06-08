@@ -35,18 +35,23 @@ constexpr int errorUnexpectedCommand = 47;
 
 int LED = 13;
 
+int count = 0;
+
+RH_RF95 rf95(RFM95_CS, RFM95_INT);
+
 void setup(){
   int restarts = 0;
   pinMode(LED, OUTPUT);
+
   pinMode(RFM95_RST, OUTPUT);
   digitalWrite(RFM95_RST, HIGH);
 
-  while (!Serial){
-    restart++;
+  while(!Serial){
+    restarts++;
     delay(1);
-    if(restart>maxRestart){
-      trhowErrorToPhone(errorFailedSerial);
-      restart()
+    if(restarts>maxRestart){
+      throwErrorToPhone(errorFailedSerial);
+      restart();
     }
   }
 
@@ -55,35 +60,41 @@ void setup(){
   delay(100);
 
   restarts = 0;
-  while(!rf9.init()){
-    restart++;
+  while(!rf95.init()){
+    restarts++;
     delay(1);
-    if(restart>maxRestart){
-      trhowErrorToPhone(errorFailedStart);
-      restart()
+    if(restarts>maxRestart){
+      throwErrorToPhone(errorFailedStart);
+      restart();
     }
   }
 }
 void loop(){
   if(checkConectioin()){
-    if(checkSerial()){
-          int action = Serial.read();
-          if(action = comnandSend){
-
-          }
-          else if(action = comnandChangeMode){
-
-          }
-          else if(action = conmandSOS){
-
-          }
-          else if(action = conmandChangeFreq){
-
-          }
-          else{
-            throwErrorToPhone(errorUnexpectedCommand);
-            break;
-          }
+    if(checkSerial() && count == 0){
+      char action = (char)Serial.read();
+      //Serial.println(action);
+      if(action == comnandSend && count == 0){
+        Serial.println("We recieved comand");
+        count++;
+      }
+      else if(action == comnandChangeMode && count == 0){
+        Serial.println("We recieved mode change");
+        count++;
+      }
+      else if(action == conmandSOS && count == 0){
+        Serial.println("We recieved SOS");
+        count++;
+      }
+      else if(action == conmandChangeFreq && count == 0){
+        Serial.println("We recieved frequency");
+        count++;
+      }
+      else if(count == 0){
+        Serial.println("We recieved inapropriate");
+        count++;
+        throwErrorToPhone(errorUnexpectedCommand);
+      }
     }
   }
   else{
