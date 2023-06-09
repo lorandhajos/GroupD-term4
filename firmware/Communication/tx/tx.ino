@@ -6,22 +6,31 @@
 #define RFM95_INT   7
 #define RFM95_RST   4
 
-//array{comand, adres, flags, message}
-//arrayElse{comand, setToWhat}
+//char {comand, adres, flags, message}
+//char {comand, setToWhat}
+
+//comands - single digit
+//flags - single digit
+//addres - tripple digit
+
+//set to what
+
 
 constexpr int comnandSend = 1;
-constexpr int comnandChangeMode = 3;
-constexpr int conmandSOS = 9;
-constexpr int conmandChangeFreq = 27;
+constexpr int comnandChangeMode = 2;
+constexpr int conmandSOS = 3;
+constexpr int conmandChangeFreq = 4;
+
 
 constexpr int flagEmpty = 2;
 constexpr int flagSnedConf = 4;
 constexpr int flagNoConf = 8;
 
+
 constexpr int modeSleep = 5;
-constexpr int modeStandBy = 6;
+constexpr int modeStandBy = 6;//fix this
 constexpr int modeListen = 7;
-constexpr int modeSend = 8;
+constexpr int modeSend = 8;//FIx the code
 
 constexpr int maxRestart = 50;
 
@@ -36,7 +45,6 @@ constexpr int errorUnexpectedCommand = 47;
 
 const int ASCInum[] = {10, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57};
 const int UTFnum[] = {-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-const int ASCIcoma = 44;
 
 int LED = 13;
 
@@ -76,34 +84,36 @@ void setup(){
 }
 void loop(){
   if(checkConectioin()){
-    //count = 0;
     if(checkSerial() && count == 0){
-      int action = readTillComa();
-      if(action == comnandSend && count == 0){
-        Serial.println("We recieved comand send");
+      count++;
+      char buffer[250]; //maximum length of mesage 240
+      int len = Serial.readBytes(buffer, 250);
+      int action = conversion(buffer[0]);
+      if(action == comnandSend && count == 1 && len>4){
+        String tmp;
+        for(int i=1; i<4; i++){
+          tmp.concat(buffer[i]);
+        }
+        int address = tmp.toInt();
         count++;
-        
-        if(count == 1){
-          int addres = readTillComa();
-          Serial.println("Addres is this");
-          Serial.println(addres);
+        if(count==2){
+          int flag = conversion(buffer[4]);
           count++;
-          
-          if(count==2){
-            int flag = readTillComa();
-            Serial.println("Flag is this");
-            Serial.println(flag);
-            count++;
-
-            if(count == 3){
-              //readPayload but need to find how to convert asci to utf
+          if(count==3){
+            String payload;
+            for(int i=5; i<len-1; i++){
+              payload.concat(buffer[i]);
             }
+            //action
+            //address
+            //flag
+            //payload
           }
         }
       }
 
       else if(action == comnandChangeMode && count == 0){
-        Serial.println("We recieved mode change");
+        
         count++;
       }
 
@@ -117,7 +127,7 @@ void loop(){
         count++;
       }
 
-      else if(count == 0 && action == -2){
+      else{
         Serial.println("We recieved inapropriate");
         count++;
         throwErrorToPhone(errorUnexpectedCommand);
@@ -149,21 +159,6 @@ String readPayload(){
 
 }
 
-int readTillComa(){//max 5 digits for some reason
-  String rtn;
-  byte buf = -1;
-  int tmp;
-  while(buf!=ASCIcoma || buf!=ASCInum[0]){
-    buf = Serial.read();
-    tmp = conversion(buf);
-    if(tmp == -2){
-      break;
-    }
-    rtn.concat(tmp);
-  }
-  tmp = rtn.toInt();
-  return tmp;
-}
 
 void setFrequency(){
 
