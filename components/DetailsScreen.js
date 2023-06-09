@@ -13,20 +13,18 @@ function formatTime(time) {
   return `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
 }
 
-const Item = ({item}) => (
-  <View style={styles.messageBox}>
-    <Text style={styles.message}>{item.message}</Text>
-    <Text style={styles.time}>{formatTime(item.time)}</Text>
-  </View>
-);
-
 function DetailsScreen({route, navigation}) {
   const [messages, setMessages] = React.useState();
+  const [messageSize, setMessageSize] = React.useState();
   const [text, setText] = React.useState();
 
   React.useEffect(() => {
     Databse.getMessages(route.params.id, setMessages);
   }, []);
+
+  React.useEffect(() => {
+    Databse.getMessageSize(setMessageSize);
+  }, [messages])
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -35,9 +33,7 @@ function DetailsScreen({route, navigation}) {
   }, [navigation]);
 
   React.useEffect(() => {
-    const value = UsbSerial.openDevice();
-
-    console.log(value);
+    UsbSerial.openDevice();
 
     if (UsbSerial.isDeviceConnected()) {
       ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
@@ -47,23 +43,43 @@ function DetailsScreen({route, navigation}) {
     }
   }, []);
 
+  const sendMessages = (text) => {
+    UsbSerial.write(text);
+    setMessages([...messages, {id: messageSize+1, message: text, time: Date.now()}]);
+  }
+
+  const Item = ({item}) => (
+    <View style={styles.messageBox}>
+      <Text style={styles.message}>{item.message}</Text>
+      <Text style={styles.time}>{formatTime(item.time)}</Text>
+    </View>
+  );
+  
+  const renderItem = ({item}) => (<Item item={item} />);
+  
+  const getItemLayout = (data, index) => (
+    {length: 50, offset: 50 * index, index}
+  );  
+
   return (
     <View style={styles.container}>
       <View style={styles.messagesContainer}>
         {messages && (
           <FlatList
             data={messages}
-            renderItem={({item}) => <Item item={item} />}
+            renderItem={renderItem}
+            getItemLayout={getItemLayout}
             keyExtractor={item => item.id}
+            initialNumToRender={5}
+            maxToRenderPerBatch={10}
+            windowSize={10}
           />
         )}
       </View>
       <View style={styles.inputContainer}>
         <TextInput style={styles.input} placeholder="Message" onChangeText={(text) => setText(text)} />
         <Pressable style={styles.sendButton}>
-          <Ionicons name="send" size={24} color="white" onPress={ () =>
-            UsbSerial.write(text)
-          }/>
+          <Ionicons name="send" size={24} color="white" onPress={() => sendMessages(text)}/>
         </Pressable>
       </View>
     </View>
