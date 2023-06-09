@@ -1,9 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, ToastAndroid } from 'react-native';
+import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, ToastAndroid, Alert} from 'react-native';
 import { Entypo, Feather } from '@expo/vector-icons'; 
 import { Menu, MenuOptions, MenuTrigger, MenuOption } from 'react-native-popup-menu';
 import { CommonActions } from '@react-navigation/native';
 import * as Databse from './Database';
+
+const { UsbSerial } = NativeModules;
 
 function formatTime(time) {
   const date = new Date(time);
@@ -50,13 +52,26 @@ const HomeScreen = ({navigation}) => {
           <MenuTrigger>
             <Entypo name="dots-three-vertical" size={20} color="black" />
           </MenuTrigger>
-          <MenuOptions style={styles.menuOptions}>
-            <MenuOption onSelect={() => navigation.navigate('ChangeRegion')} text='Settings' />
+          <MenuOptions>
+            <MenuOption style={styles.menuOptions} onSelect={() => navigation.navigate('Settings')} text='Settings' />
           </MenuOptions>
         </Menu>
       ),
     });
   }, [navigation]);
+
+  React.useEffect(() => {
+    const value = UsbSerial.openDevice();
+
+    console.log(value);
+
+    if (UsbSerial.isDeviceConnected()) {
+      ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
+      console.log('Radio Module connected!');
+    } else {
+      ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
+    }
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -90,7 +105,7 @@ const showAlert = () =>{
     [
       {
         text: 'Yes',
-        onPress: () => Alert.alert('SOS has been sent'),
+        onPress: () => UsbSerial.write('LOL I need help'),
       },
 
       {
@@ -135,6 +150,7 @@ const styles = StyleSheet.create({
   },
   menuOptions: {
     padding: 8,
+    fontWeight: 'bold',
   },
   sosButton:{
     justifyContent: 'center',
