@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ImageBackground, Pressable, TextInput } from 'react-native';
+import { StyleSheet, Text, View, ImageBackground, Pressable, TextInput, Dimensions } from 'react-native';
 import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Databse from './Database';
@@ -54,7 +54,7 @@ function SetupScreen({navigation}) {
   return (
     <View style={styles.container}>
       <View style={styles.setupScreen}>
-        <ImageBackground source={image} resize='cover' style={styles.setupImage}>
+        <ImageBackground source={image} style={styles.setupImage}>
         <Text style={styles.chooseUsername}>Choose Username</Text>
             <TextInput
                 style={styles.input}
@@ -82,10 +82,14 @@ const styles = StyleSheet.create({
   },
   setupScreen:{
     flex: 1,
-    width: '100%',
   },
   setupImage: {
     flex: 1,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: Dimensions.get('window').width,
+    height: Dimensions.get('window').height,
   },
   chooseUsername:{
     fontSize: 30,
