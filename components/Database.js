@@ -62,11 +62,24 @@ export const fillDatabase = () => {
   insertMessage(1, 'Hello!', Date.now());
   insertMessage(2, 'This is a really long test message testing testing\ntesting test test test', Date.now());
   insertMessage(3, 'Testing', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
 }
 
 export const insertContact = (name) => {
@@ -107,7 +120,7 @@ export const getContacts = (setContactsFunc) => {
 export const getMessages = (contactId, setMessagesFunc) => {
   db.transaction(tx => {
     tx.executeSql(
-      'SELECT * FROM messages WHERE contactId = ?',
+      'SELECT id, message, time FROM messages WHERE contactId = ?',
       [contactId],
       (_, { rows }) => {
         setMessagesFunc(rows._array);
@@ -144,6 +157,21 @@ export const getHomeScreenData = (setHomeScreenData) => {
       },
       (_, error) => {
         console.error('Error getting contacts:', error);
+      }
+    );
+  });
+}
+
+export const getMessageSize = (setMessageSizeFunc) => {
+  db.transaction(tx => {
+    tx.executeSql(
+      'SELECT COUNT(*) FROM messages',
+      [],
+      (_, { rows }) => {
+        setMessageSizeFunc(rows._array[0]['COUNT(*)']);
+      },
+      (_, error) => {
+        console.error('Error getting message size:', error);
       }
     );
   });

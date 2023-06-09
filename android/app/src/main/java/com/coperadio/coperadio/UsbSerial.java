@@ -81,26 +81,28 @@ public class UsbSerial extends ReactContextBaseJavaModule {
 
   @ReactMethod(isBlockingSynchronousMethod = true)
   public void write(String str) {
-    // bytes[command, address, flags, message]
-    // bytes[command, settings]
-    try {
-      byte[] data = (str + '\0').getBytes();
-      port.write(data, WRITE_WAIT_MILLIS);
-      Log.i("UsbSerial", "write " + str);
-    } catch(IOException err) {
-      Log.e("UsbSerial", "write error");
+    if (isDeviceConnected()) {
+      try {
+        byte[] data = (str + '\0').getBytes();
+        port.write(data, WRITE_WAIT_MILLIS);
+        Log.i("UsbSerial", "write " + str);
+      } catch(IOException err) {
+        Log.e("UsbSerial", "write error");
+      }
     }
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
   public String read() {
-    try {
-      byte[] buffer = new byte[512];
-      int len = port.read(buffer, READ_WAIT_MILLIS);
-      return new String(Arrays.copyOf(buffer, len));
-    } catch(IOException err) {
-      Log.e("UsbSerial", "connection lost: " + err.getMessage());
-      disconnect();
+    if (isDeviceConnected()) {
+      try {
+        byte[] buffer = new byte[512];
+        int len = port.read(buffer, READ_WAIT_MILLIS);
+        return new String(Arrays.copyOf(buffer, len));
+      } catch(IOException err) {
+        Log.e("UsbSerial", "connection lost: " + err.getMessage());
+        disconnect();
+      }
     }
     return null;
   }
