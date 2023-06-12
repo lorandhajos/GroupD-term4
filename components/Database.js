@@ -24,7 +24,7 @@ function createTables() {
     );
 
     tx.executeSql(
-      'CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, contactId INTEGER NOT NULL, message TEXT NOT NULL, time INTEGER NOT NULL, FOREIGN KEY(contactId) REFERENCES contacts(id))',
+      'CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, contactId INTEGER NOT NULL, message TEXT NOT NULL, time INTEGER NOT NULL, type INTEGER NOT NULL, FOREIGN KEY(contactId) REFERENCES contacts(id))',
     );
   }, (error) => {
     console.error('Error creating tables:', error);
@@ -91,11 +91,11 @@ export const insertContact = (name) => {
   });
 }
 
-export const insertMessage = (contactId, message, time) => {
+export const insertMessage = (contactId, message, time, type = 0) => {
   db.transaction(tx => {
     tx.executeSql(
-      'INSERT INTO messages (contactId, message, time) VALUES (?, ?, ?)',
-      [contactId, message, time],
+      'INSERT INTO messages (contactId, message, time, type) VALUES (?, ?, ?, ?)',
+      [contactId, message, time, type],
     );
   }, (error) => {
     console.error('Error inserting message:', error);
@@ -120,7 +120,7 @@ export const getContacts = (setContactsFunc) => {
 export const getMessages = (contactId, setMessagesFunc) => {
   db.transaction(tx => {
     tx.executeSql(
-      'SELECT id, message, time FROM messages WHERE contactId = ?',
+      'SELECT id, message, time, type FROM messages WHERE contactId = ?',
       [contactId],
       (_, { rows }) => {
         setMessagesFunc(rows._array);
