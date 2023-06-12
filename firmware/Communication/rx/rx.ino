@@ -19,7 +19,7 @@ char g_lastMessage[RH_RF95_MAX_MESSAGE_LEN];
 
 const uint8_t BITMASK_ACK_REQ = 0b00000001;
 const uint8_t BITMASK_IS_ACK =  0b00000010;
-const uint8_t BISMASK_IS_KEY =  0b00000100;
+const uint8_t BITMASK_IS_KEY =  0b00000100;
 
 // Radio driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
@@ -68,23 +68,6 @@ void setup() {
   rf95.setTxPower(23, false);
 }
 
-bool getRadioMessage() {
-    if (manager.available()) {
-        Serial.println("rf95 available");
-        // check if there is a message for us 
-        Serial.println(manager.headerTo()); //255
-        Serial.println(manager.headerFrom());//255
-        Serial.println(manager.headerId());//0
-        Serial.println(manager.headerFlags());//0
-        Serial.println(manager.thisAddress());
-        uint8_t len = sizeof(g_lastMessage);
-        if (manager.recvfrom(g_lastMessage, &len)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 void setFlags(bool reqAck, bool isAck, bool isKey) {
     if (reqAck) {
         manager.setHeaderFlags(BITMASK_ACK_REQ);
@@ -108,6 +91,32 @@ bool hasFlag(uint8_t bitmask) {
     return (bool) flag & bitmask;
 }
 
+bool getRadioMessage() {
+    if (manager.available()) {
+        Serial.println("rf95 available");
+        // check if there is a message for us 
+        Serial.println(manager.headerTo()); //255
+        Serial.println(manager.headerFrom());//255
+        Serial.println(manager.headerId());//0
+        Serial.println(manager.headerFlags());//0
+        Serial.println(manager.thisAddress());
+        uint8_t len = sizeof(g_lastMessage);
+        if (manager.recvfrom(g_lastMessage, &len)) {
+            Serial.print(hasFlag(BITMASK_ACK_REQ));
+            Serial.print(hasFlag(BITMASK_IS_ACK));
+            Serial.print(hasFlag(BITMASK_IS_KEY));
+            Serial.println("");
+            return true;
+        }
+    }
+    return false;
+}
+
+bool sendRadioMessage(char* buf, int len, int address = 255, int timeout=1000) {
+    manager.sendto(buf, len, address);
+    return manager.waitPacketSent(timeout);
+}
+
 void loop() {
     delay(500);
     rf95.setModeRx();
@@ -121,6 +130,6 @@ void loop() {
         digitalWrite(LED_BUILTIN, LOW);
     } 
     else {
-        Serial.println("No reply");
+        Serial.println("No messages for us");
     }
 }
