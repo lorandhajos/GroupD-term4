@@ -21,12 +21,6 @@ const uint8_t BITMASK_ACK_REQ = 0b00000001;
 const uint8_t BITMASK_IS_ACK =  0b00000010;
 const uint8_t BISMASK_IS_KEY =  0b00000100;
 
-const uint8_t FLAG_NOTHING = 0;
-const uint8_t FLAG_REQ_ACK = 1;
-const uint8_t FLAG_AN_ACK = 2;
-const uint8_t FLAG_AN_KEY = 8;
-
-
 // Radio driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 RHDatagram manager(rf95, 12);
@@ -85,14 +79,33 @@ bool getRadioMessage() {
         Serial.println(manager.thisAddress());
         uint8_t len = sizeof(g_lastMessage);
         if (manager.recvfrom(g_lastMessage, &len)) {
-            //uint8_t flag = manager.headerFlags();
-            //if (flag == FLAG_REQ_ACK) {
-            //    
-            //}
             return true;
         }
     }
     return false;
+}
+
+void setFlags(bool reqAck, bool isAck, bool isKey) {
+    if (reqAck) {
+        manager.setHeaderFlags(BITMASK_ACK_REQ);
+    } else {
+        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_ACK_REQ);
+    }
+    if (isAck) {
+        manager.setHeaderFlags(BITMASK_IS_ACK);
+    } else {
+        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_ACK);
+    }
+    if (isKey) {
+        manager.setHeaderFlags(BITMASK_IS_KEY);
+    } else {
+        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_KEY);
+    }
+}
+
+bool hasFlag(uint8_t bitmask) {
+    uint8_t flag = manager.headerFlags();
+    return (bool) flag & bitmask;
 }
 
 void loop() {
