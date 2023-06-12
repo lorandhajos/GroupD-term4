@@ -46,6 +46,7 @@ function DetailsScreen({route, navigation}) {
     UsbSerial.write(text);
     setMessages([...messages, {id: messageSize+1, message: text, time: Date.now()}]);
     Databse.insertMessage(route.params.id, text, Date.now(), 1);
+    this.textInput.clear();
   }
 
   const Item = ({item}) => (
@@ -87,7 +88,8 @@ function DetailsScreen({route, navigation}) {
         )}
       </View>
       <View style={styles.inputContainer}>
-        <TextInput style={styles.input} placeholder="Message" onChangeText={(text) => setText(text)} />
+        <TextInput style={styles.input} placeholder="Message" ref={input => { this.textInput = input }}
+          onChangeText={(text) => setText(text)} />
         <Pressable style={styles.sendButton}>
           <Ionicons name="send" size={24} color="white" onPress={() => sendMessages(text)}/>
         </Pressable>
