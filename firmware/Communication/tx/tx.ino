@@ -1,10 +1,12 @@
 #include <SPI.h>
 #include <RH_RF95.h>
-#include <Arduino.h>
+#include <RHDatagram.h>
 
 #define RFM95_CS    8
 #define RFM95_INT   7
 #define RFM95_RST   4
+
+#define RF95_FREQ 915.0
 
 //char {comand, adres, flags, message}
 //char {comand, setToWhat}
@@ -29,6 +31,9 @@ constexpr int conmandSOS = 3;
 constexpr int SOStoON = 1;
 constexpr int SOStoOFF = 0;
 
+const uint8_t BITMASK_ACK_REQ = 0b00000001;
+const uint8_t BITMASK_IS_ACK =  0b00000010;
+const uint8_t BITMASK_IS_KEY =  0b00000100;
 
 constexpr int flagEmpty = 0;
 constexpr int flagSnedConf = 2;
@@ -59,7 +64,7 @@ int LED = 13;
 int count = 0;
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
-
+RHDatagram manager(rf95, 13);
 void setup(){
   int restarts = 0;
   pinMode(LED, OUTPUT);
@@ -89,8 +94,24 @@ void setup(){
       restart();
     }
   }
+
+  if(!rf95.setFrequency(RF95_FREQ)){
+    while(1);
+  }
+
+  restarts = 0;
+  while(!manager.init()){
+    restarts++;
+    delay(1);
+    if(restarts>maxRestart){
+      throwErrorToPhone(errorFailedStart);
+      restart();
+    }
+  }
+  rf95.setTxPower(23, false);
 }
 void loop(){
+  count = 0;
   if(checkConectioin()){
     if(checkSerial() && count == 0){
       count++;
@@ -113,10 +134,22 @@ void loop(){
             for(int i=5; i<len-1; i++){
               payload.concat(buffer[i]);
             }
+            int Plength = sizeof(payload)+2;
+            char toSend[Plength];
+            toSend[Plength-1]='/0';
+            payload.toCharArray(toSend, Plength);
+            manager.setHeaderTo(address);
+            setFlags(true, false, false);
+            manager.sendto((uint8_t *)toSend, Plength, 255);
+            manager.waitPacketSent();
             //action
             //address
             //flag
             //payload
+            Serial.println("We got here");
+            Serial.println(Plength);
+            Serial.println(address);
+            Serial.println(toSend);
           }
         }
       }
@@ -213,6 +246,24 @@ bool checkConectioin(){
 
 void throwErrorToPhone(int errorType){
   Serial.write(errorType);
+}
+
+void setFlags(bool reqAck, bool isAck, bool isKey) {
+    if (reqAck) {
+        manager.setHeaderFlags(BITMASK_ACK_REQ);
+    } else {
+        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_ACK_REQ);
+    }
+    if (isAck) {
+        manager.setHeaderFlags(BITMASK_IS_ACK);
+    } else {
+        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_ACK);
+    }
+    if (isKey) {
+        manager.setHeaderFlags(BITMASK_IS_KEY);
+    } else {
+        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_KEY);
+    }
 }
 
 void restart(){
