@@ -37,7 +37,6 @@ function DetailsScreen({route, navigation}) {
 
     if (UsbSerial.isDeviceConnected()) {
       ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
-      console.log('Radio Module connected!');
     } else {
       ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
     }
@@ -56,11 +55,9 @@ function DetailsScreen({route, navigation}) {
   );
   
   const renderItem = ({item}) => (<Item item={item} />);
-  
-  const getItemLayout = (data, index) => (
-    {length: 50, offset: 50 * index, index}
-  );  
 
+  let scrollRef = React.useRef(null)
+  
   return (
     <View style={styles.container}>
       <View style={styles.messagesContainer}>
@@ -68,11 +65,13 @@ function DetailsScreen({route, navigation}) {
           <FlatList
             data={messages}
             renderItem={renderItem}
-            getItemLayout={getItemLayout}
+            ref={(it) => (scrollRef.current = it)}
             keyExtractor={item => item.id}
-            initialNumToRender={5}
             maxToRenderPerBatch={10}
             windowSize={10}
+            onContentSizeChange={() =>
+              scrollRef.current?.scrollToEnd({animated: false})
+            }
           />
         )}
       </View>
