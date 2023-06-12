@@ -20,7 +20,7 @@ function DetailsScreen({route, navigation}) {
 
   React.useEffect(() => {
     Databse.getMessages(route.params.id, setMessages);
-  }, []);
+  }, [messages]);
 
   React.useEffect(() => {
     Databse.getMessageSize(setMessageSize);
@@ -45,13 +45,24 @@ function DetailsScreen({route, navigation}) {
   const sendMessages = (text) => {
     UsbSerial.write(text);
     setMessages([...messages, {id: messageSize+1, message: text, time: Date.now()}]);
+    Databse.insertMessage(route.params.id, text, Date.now(), 1);
   }
 
   const Item = ({item}) => (
-    <View style={styles.messageBox}>
-      <Text style={styles.message}>{item.message}</Text>
-      <Text style={styles.time}>{formatTime(item.time)}</Text>
-    </View>
+    <>
+      {item.type == 1 && (
+        <View style={[styles.messageBox, styles.messageBoxSent]}>
+          <Text style={[styles.message, styles.messageSent]}>{item.message}</Text>
+          <Text style={[styles.time, styles.messageSent]}>{formatTime(item.time)}</Text>
+        </View>
+      )}
+      {item.type == 0 && (
+        <View style={styles.messageBox}>
+          <Text style={styles.message}>{item.message}</Text>
+          <Text style={styles.time}>{formatTime(item.time)}</Text>
+        </View>
+      )}
+    </>
   );
   
   const renderItem = ({item}) => (<Item item={item} />);
@@ -103,6 +114,10 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     margin: 10,
   },
+  messageBoxSent: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#3385ff',
+  },
   inputContainer: {
     flexDirection: 'row',
     padding: 8,
@@ -129,6 +144,9 @@ const styles = StyleSheet.create({
   },
   message: {
     fontSize: 16,
+  },
+  messageSent: {
+    color: '#ffffff',
   },
 });
 

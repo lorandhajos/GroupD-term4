@@ -43,7 +43,7 @@ const HomeScreen = ({navigation}) => {
         });
       }
     });
-  }, []);
+  }, [messages]);
 
   React.useEffect(() => {
     navigation.setOptions({
