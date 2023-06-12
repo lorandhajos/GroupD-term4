@@ -9,28 +9,36 @@
 //char {comand, adres, flags, message}
 //char {comand, setToWhat}
 
+//sendto(addres, message{from, flag, message});
+
 //comands - single digit
 //flags - single digit
 //addres - tripple digit
+
+//max addres is 255
+//initialise manager
 
 //set to what
 
 
 constexpr int comnandSend = 1;
 constexpr int comnandChangeMode = 2;
-constexpr int conmandSOS = 3;
 constexpr int conmandChangeFreq = 4;
+constexpr int conmandSOS = 3;
+
+constexpr int SOStoON = 1;
+constexpr int SOStoOFF = 0;
 
 
-constexpr int flagEmpty = 2;
-constexpr int flagSnedConf = 4;
-constexpr int flagNoConf = 8;
+constexpr int flagEmpty = 0;
+constexpr int flagSnedConf = 2;
+constexpr int flagNoConf = 1;
 
 
 constexpr int modeSleep = 5;
-constexpr int modeStandBy = 6;//fix this
+constexpr int modeStandBy = 6;
 constexpr int modeListen = 7;
-constexpr int modeSend = 8;//FIx the code
+constexpr int modeSend = 8;
 
 constexpr int maxRestart = 50;
 
@@ -89,6 +97,7 @@ void loop(){
       char buffer[250]; //maximum length of mesage 240
       int len = Serial.readBytes(buffer, 250);
       int action = conversion(buffer[0]);
+
       if(action == comnandSend && count == 1 && len>4){
         String tmp;
         for(int i=1; i<4; i++){
@@ -111,31 +120,60 @@ void loop(){
           }
         }
       }
-
-      else if(action == comnandChangeMode && count == 0){
+      else if(action == comnandChangeMode && count == 1){
+        count++;
+        int mode = conversion(buffer[1]);
         
+        if(mode==modeSleep){
+          rf95.sleep();
+        }
+        if(mode==modeStandBy){
+          rf95.setModeIdle();
+        }
+        if(mode==modeListen){
+          rf95.setModeRx();
+        }
+        if(mode==modeSend){
+          rf95.setModeTx();
+        }
+        else{
+          throwErrorToPhone(errorFailedModeChange);
+        }
+      }
+      else if(action == conmandSOS && count == 1){
         count++;
+        int ONorOFF = conversion(buffer[1]);
+        if(ONorOFF == SOStoON && count==2){
+          //set SOS to on
+        }
+        else if(ONorOFF == SOStoOFF && count==2){
+          //set SOS to off
+        }
+        else{
+          throwErrorToPhone(errorUnexpectedCommand);
+        }
       }
 
-      else if(action == conmandSOS && count == 0){
-        Serial.println("We recieved SOS");
+      else if(action == conmandChangeFreq && count == 1 && len>2){
         count++;
-      }
-
-      else if(action == conmandChangeFreq && count == 0){
-        Serial.println("We recieved frequency");
-        count++;
+        String tmp;
+        for(int i=1; i<4; i++){
+          tmp.concat(buffer[i]);
+        }
+        int freq = tmp.toInt();
+          if(count==2 && freq>700 && freq<1000){
+            rf95.setFrequency(freq);
+          }
       }
 
       else{
-        Serial.println("We recieved inapropriate");
         count++;
         throwErrorToPhone(errorUnexpectedCommand);
       }
     }
   }
   else{
-
+    //recieving?
   }
 }
 
@@ -154,11 +192,6 @@ int conversion(int buffer){
   }
   return -2;
 }
-
-String readPayload(){
-
-}
-
 
 void setFrequency(){
 
@@ -179,7 +212,7 @@ bool checkConectioin(){
 }
 
 void throwErrorToPhone(int errorType){
-
+  Serial.write(errorType);
 }
 
 void restart(){
