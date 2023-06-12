@@ -63,11 +63,8 @@ const HomeScreen = ({navigation}) => {
   React.useEffect(() => {
     const value = UsbSerial.openDevice();
 
-    console.log(value);
-
     if (UsbSerial.isDeviceConnected()) {
       ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
-      console.log('Radio Module connected!');
     } else {
       ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
     }
