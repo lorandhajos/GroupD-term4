@@ -23,7 +23,7 @@ const uint8_t BITMASK_IS_KEY =  0b00000100;
 
 // Radio driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
-RHDatagram manager(rf95, 7);
+RHDatagram manager(rf95, 12);
 void resetRST() {
     digitalWrite(RFM95_RST, LOW);
     delay(10);
@@ -68,33 +68,24 @@ void setup() {
   rf95.setTxPower(23, false);
 }
 
-void setFlags(bool reqAck, bool isAck, bool isKey) {
-    if (reqAck) {
-        manager.setHeaderFlags(BITMASK_ACK_REQ);
-    } else {
-        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_ACK_REQ);
-    }
-    if (isAck) {
-        manager.setHeaderFlags(BITMASK_IS_ACK);
-    } else {
-        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_ACK);
-    }
-    if (isKey) {
-        manager.setHeaderFlags(BITMASK_IS_KEY);
-    } else {
-        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_KEY);
-    }
+void setFlags(uint8_t flag) {
+    // cleaning up all flags
+    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_ACK_REQ);
+    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_ACK);
+    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_KEY);
+    // setting the new flag
+    manager.setHeaderFlags(flag);
 }
 
 bool hasFlag(uint8_t bitmask) {
     uint8_t flag = manager.headerFlags();
-    return (bool) flag & bitmask;
+    return (flag & bitmask > 0);
 }
 
 bool getRadioMessage() {
     if (manager.available()) {
-        Serial.println("rf95 available");
-        // check if there is a message for us 
+        // check if there is a message for us
+         
         Serial.println(manager.headerTo()); //255
         Serial.println(manager.headerFrom());//255
         Serial.println(manager.headerId());//0
@@ -118,14 +109,16 @@ bool sendRadioMessage(char* buf, int len, int address = 255, int timeout=1000) {
 }
 
 void loop() {
-    char msg[RH_RF95_MAX_MESSAGE_LEN];
-    if (Serial.available() > 0) {
+    int count = 0;
+    if (Serial.available() > 0 && count == 0) {
+        count++;
+        char msg[RH_RF95_MAX_MESSAGE_LEN];
         int len = Serial.readBytes(msg, RH_RF95_MAX_MESSAGE_LEN);
         Serial.print("us: ");
         Serial.print(msg);
         sendRadioMessage(msg, len);
     }
-    //rf95.setModeRx();
+    rf95.setModeRx();
     if (getRadioMessage()) {
         Serial.print("them: ");
         Serial.println(g_lastMessage);
