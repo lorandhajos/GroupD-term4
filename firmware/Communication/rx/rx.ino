@@ -119,6 +119,7 @@ bool sendRadioMessage(char* buf, int len, int address = 255, int timeout=1000) {
 
 void loop() {
     delay(500);
+    sendRadioMessage("Test2", 6, 8);
     rf95.setModeRx();
     if (getRadioMessage()) {
         Serial.println(g_lastMessage);
