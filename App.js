@@ -1,4 +1,5 @@
 import React from 'react';
+import { LogBox } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -7,6 +8,8 @@ import { HomeScreen, DetailsScreen, SetupScreen, Settings } from './components';
 import { MenuProvider } from 'react-native-popup-menu';
 
 const Stack = createNativeStackNavigator();
+
+LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore annoying warning
 
 function App() {
   return (
