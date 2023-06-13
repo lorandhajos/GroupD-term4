@@ -118,11 +118,18 @@ bool sendRadioMessage(char* buf, int len, int address = 255, int timeout=1000) {
 }
 
 void loop() {
-    delay(500);
-    sendRadioMessage("Test2", 6, 8);
-    rf95.setModeRx();
+    char msg[RH_RF95_MAX_MESSAGE_LEN];
+    if (Serial.available() > 0) {
+        int len = Serial.readBytes(msg, RH_RF95_MAX_MESSAGE_LEN);
+        Serial.print("us: ");
+        Serial.print(msg);
+        sendRadioMessage(msg, len);
+    }
+    //rf95.setModeRx();
     if (getRadioMessage()) {
+        Serial.print("them: ");
         Serial.println(g_lastMessage);
+        /*
         // Send a reply
         uint8_t data[] = "And hello back to you";
         rf95.send(data, sizeof(data));
@@ -132,5 +139,7 @@ void loop() {
     } 
     else {
         Serial.println("No messages for us");
+    }
+    */
     }
 }
