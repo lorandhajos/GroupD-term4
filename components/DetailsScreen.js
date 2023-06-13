@@ -1,7 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, Pressable, FlatList, ToastAndroid, NativeModules } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { StyleSheet, Text, View, TextInput, Pressable, FlatList, ToastAndroid, NativeModules, TouchableOpacity } from 'react-native';
+import { FontAwesome, Ionicons} from '@expo/vector-icons';
 import * as Databse from './Database';
+import * as Speech from 'expo-speech';
+import Voice from '@react-native-voice/voice';
 
 const { UsbSerial } = NativeModules;
 
@@ -14,17 +16,15 @@ function formatTime(time) {
 }
 
 function DetailsScreen({route, navigation}) {
-  const [messages, setMessages] = React.useState();
-  const [messageSize, setMessageSize] = React.useState();
-  const [text, setText] = React.useState();
+  const [messages, setMessages] = React.useState('');
+  const [messageSize, setMessageSize] = React.useState('');
+  const [text, setText] = React.useState('');
+  const [isListening, setIsListening] = React.useState(false);
 
   React.useEffect(() => {
     Databse.getMessages(route.params.id, setMessages);
-  }, [messages]);
-
-  React.useEffect(() => {
     Databse.getMessageSize(setMessageSize);
-  }, [messages])
+  }, [messages]);
 
   React.useEffect(() => {
     navigation.setOptions({
@@ -42,11 +42,54 @@ function DetailsScreen({route, navigation}) {
     }
   }, []);
 
+  React.useEffect(() => {
+    Voice.onSpeechStart = speechStartHandler;
+    Voice.onSpeechEnd = speechEndHandler;
+    Voice.onSpeechResults = speechResultsHandler;
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
+
+  const speechStartHandler = e => {
+    console.log('speechStart successful', e);
+  };
+
+  const speechEndHandler = e => {
+    setIsListening(false);
+    console.log('stop handler', e);
+  };
+
+  const speechResultsHandler = e => {
+    const text = e.value[0];
+    console.log('speechResults successful', e);
+    setText(text);
+    this.textInput.value = text;
+  };
+
   const sendMessages = (text) => {
     UsbSerial.write(text);
     setMessages([...messages, {id: messageSize+1, message: text, time: Date.now()}]);
     Databse.insertMessage(route.params.id, text, Date.now(), 1);
     this.textInput.clear();
+  }
+
+  const speechToText = () => {
+    if (!isListening) {
+      setIsListening(true);
+      try {
+        Voice.start('en-US');
+      } catch (error) {
+        console.log('error', error);
+      }
+    } else {
+      setIsListening(false);
+      Voice.stop();
+    }
+  }
+
+  const textToSpeech = (text) => {
+    Speech.speak(text);
   }
 
   const Item = ({item}) => (
@@ -66,7 +109,11 @@ function DetailsScreen({route, navigation}) {
     </>
   );
   
-  const renderItem = ({item}) => (<Item item={item} />);
+  const renderItem = ({item}) => (
+    <TouchableOpacity onPress={() => textToSpeech(item.message)}>
+      <Item item={item} />
+    </TouchableOpacity>
+  );
 
   let scrollRef = React.useRef(null)
   
@@ -88,10 +135,15 @@ function DetailsScreen({route, navigation}) {
         )}
       </View>
       <View style={styles.inputContainer}>
-        <TextInput style={styles.input} placeholder="Message" ref={input => { this.textInput = input }}
+        <TextInput multiline={true} style={styles.input} placeholder="Message" ref={input => { this.textInput = input }}
           onChangeText={(text) => setText(text)} />
         <Pressable style={styles.sendButton}>
-          <Ionicons name="send" size={24} color="white" onPress={() => sendMessages(text)}/>
+          {text && text.length > 0 && (
+            <Ionicons name="send" size={22} color="white" style={styles.icon} onPress={() => sendMessages(text)} />
+          )}
+          {!text && (
+            <FontAwesome name="microphone" size={24} color="white" style={styles.icon} onPress={() => speechToText()} />
+          )}
         </Pressable>
       </View>
     </View>
@@ -130,14 +182,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 15,
     marginRight: 10,
+    fontSize: 16,
   },
   sendButton: {
     backgroundColor: '#3385ff',
     borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 15,
+    padding: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    width: 50,
   },
   time: {
     fontSize: 10,
@@ -149,6 +202,10 @@ const styles = StyleSheet.create({
   },
   messageSent: {
     color: '#ffffff',
+  },
+  icon: {
+    width: 24,
+    textAlign: 'center',
   },
 });
 
