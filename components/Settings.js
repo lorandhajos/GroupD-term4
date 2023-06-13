@@ -1,15 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View, Image, Pressable } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { Button } from 'react-native-elements';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Settings = () => {
-  const [pickerVisible, setPickerVisible] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState("selectedLanguage"); // set default selected value
-  const [selectedRegion, setSelectedRegion] = useState(""); // new state variable for selected region
+  const [pickerVisible, setPickerVisible] = React.useState(false);
+  const [selectedLanguage, setSelectedLanguage] = React.useState("selectedLanguage"); // set default selected value
+  const [selectedRegion, setSelectedRegion] = React.useState(""); // new state variable for selected region
 
-  useEffect(() => {
+  React.useEffect(() => {
     retrieveSelectedRegion();
   }, []);
 
@@ -43,22 +42,16 @@ const Settings = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
-        <Image source={require('../assets/theme.png')} />
-        <Text style={styles.naming}> Appearance </Text>
-      </View>
-
-      <Pressable onPress={handlePress}>
-        <View style={styles.row}>
-          <Image source={require('../assets/region.png')} />
-          <Text style={styles.naming}> Select Region </Text>
-        </View>
+      <Pressable style={[styles.row, {marginTop: 0}]}>
+        <Image style={styles.image} source={require('../assets/theme.png')} />
+        <Text style={styles.naming}>Appearance</Text>
       </Pressable>
-
+      <Pressable style={styles.row} onPress={handlePress}>
+        <Image style={styles.image} source={require('../assets/region.png')} />
+        <Text style={styles.naming}>Select Region</Text>
+      </Pressable>
       {pickerVisible && (
-        <Picker
-          selectedValue={selectedRegion} // Use selectedRegion instead of selectedLanguage
-          style={{ height: 20, width: 150 }}
+        <Picker selectedValue={selectedRegion} // Use selectedRegion instead of selectedLanguage}
           onValueChange={handleRegionChange} // Use handleRegionChange function
         >
           <Picker.Item label="Europe" value="EU" />
@@ -66,26 +59,35 @@ const Settings = () => {
           <Picker.Item label="America" value="AM" />
         </Picker>
       )}
-
-      <View style={styles.row}>
-        <Image source={require('../assets/notification.png')} />
-        <Text style={styles.naming}> Notifications </Text>
-      </View>
+      <Pressable style={styles.row}>
+        <Image style={styles.image} source={require('../assets/notification.png')} />
+        <Text style={styles.naming}>Notifications</Text>
+      </Pressable>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    alignItems: 'center',
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    padding: 8,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 8,
+    backgroundColor: '#FFFFFF',
+    padding: 10,
+    borderRadius: 10,
   },
   naming: {
-    fontSize: 22,
+    fontSize: 20,
+    marginLeft: 20,
+  },
+  image: {
+    width: 35,
+    height: 35,
   },
 });
 
