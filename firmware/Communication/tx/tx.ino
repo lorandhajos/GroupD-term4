@@ -74,7 +74,6 @@ void loop(){
       count++;
       char buffer[250]; //maximum length of mesage 250
       int len = Serial.readBytes(buffer, 250);
-      delay(100);//maybe not wait
       int action = conversion(buffer[0]);
 
       if(action == 1 && len>6 && count==1){
@@ -97,7 +96,8 @@ void loop(){
           payload[i] = loadRead[i];
         }
         payload[Plength-1]=0;
-        
+
+        setFlags(flag);
         manager.sendto((uint8_t *)payload, Plength, address);
 
         manager.waitPacketSent();
@@ -137,6 +137,7 @@ void loop(){
           throwErrorToPhone(errorUnexpectedCommand);
         }
       }
+      */
 
       else if(action == conmandChangeFreq && count == 1 && len>2){
         count++;
@@ -145,11 +146,15 @@ void loop(){
           tmp.concat(buffer[i]);
         }
         int freq = tmp.toInt();
-          if(count==2 && freq>700 && freq<1000){
-            rf95.setFrequency(freq);
+          if(count==2 && freq>430 && freq<999){
+            if(!rf95.setFrequency(freq)){
+              Serial.println("OBOSRALSYA");
+            }
+            delay(1000);
+            Serial.println(freq);
+            restart();
           }
       }
-      */
       else{
         count++;
         throwErrorToPhone(errorUnexpectedCommand);
@@ -216,6 +221,16 @@ void setFlags(bool reqAck, bool isAck, bool isKey) {
         manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_KEY);
     }
 }
+
+void setFlags(uint8_t flag) {
+    // cleaning up all flags
+    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_ACK_REQ);
+    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_ACK);
+    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_KEY);
+    // setting the new flag
+    manager.setHeaderFlags(flag);
+}
+
 
 void restart(){
   digitalWrite(RFM95_RST, LOW);
