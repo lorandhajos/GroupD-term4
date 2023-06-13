@@ -55,13 +55,16 @@ void setup(){
   Serial.begin(115200);
   delay(100);
 
+  digitalWrite(RFM95_RST, LOW);
+  delay(10);
+  digitalWrite(RFM95_RST, HIGH);
+  delay(10);
+
   rf95.init();
+  manager.init();
 
   rf95.setFrequency(RF95_FREQ);
 
-  while(!manager.init()){
-    delay(1);
-  }
   rf95.setTxPower(23, false);
 }
 void loop(){
@@ -69,9 +72,9 @@ void loop(){
   if(checkConectioin()){
     if(checkSerial() && count == 0){
       count++;
-      char buffer[250]; //maximum length of mesage 240
+      char buffer[250]; //maximum length of mesage 250
       int len = Serial.readBytes(buffer, 250);
-      delay(100);
+      delay(100);//maybe not wait
       int action = conversion(buffer[0]);
 
       if(action == 1 && len>6 && count==1){
@@ -92,10 +95,13 @@ void loop(){
         char payload[Plength];
         for(int i=0; i<Plength-1;i++){
           payload[i] = loadRead[i];
-          Serial.println(payload[i]);
         }
         payload[Plength-1]=0;
         
+        manager.sendto((uint8_t *)payload, Plength, address);
+
+        manager.waitPacketSent();
+        delay(10);
       }
       /*
       else if(action == comnandChangeMode && count == 1){
