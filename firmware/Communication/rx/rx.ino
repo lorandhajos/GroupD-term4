@@ -17,9 +17,10 @@ char g_msgArray[maxMessages][RH_RF95_MAX_MESSAGE_LEN];
 int g_freeIndexMsg = 0;
 char g_lastMessage[RH_RF95_MAX_MESSAGE_LEN];
 
-const uint8_t BITMASK_ACK_REQ = 0b00000001;
-const uint8_t BITMASK_IS_ACK =  0b00000010;
-const uint8_t BITMASK_IS_KEY =  0b00000100;
+const uint8_t BITMASK_CLEAR_ALL = 0b00001111;
+const uint8_t BITMASK_ACK_REQ   = 0b00000001;
+const uint8_t BITMASK_IS_ACK    = 0b00000010;
+const uint8_t BITMASK_IS_KEY    = 0b00000100;
 
 // Radio driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
@@ -29,6 +30,46 @@ void resetRST() {
     delay(10);
     digitalWrite(RFM95_RST, HIGH);
     delay(10);
+}
+
+
+void setFlags(uint8_t flag) {
+    // cleaning up all flags
+    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_CLEAR_ALL);
+    // setting the new flag
+    manager.setHeaderFlags(flag);
+}
+
+bool hasFlag(uint8_t flag, uint8_t target) {
+    return (flag & target);
+}
+
+bool getRadioMessage() {
+    if (manager.available()) {
+        // check if there is a message for us
+         
+        Serial.println(manager.headerTo()); //255
+        Serial.println(manager.headerFrom());//255
+        Serial.println(manager.headerId());//0
+        Serial.println(manager.headerFlags());//0
+        Serial.println(manager.thisAddress());
+        uint8_t len = sizeof(g_lastMessage);
+        if (manager.recvfrom(g_lastMessage, &len)) {
+            Serial.print("Requires acknowledgement: ");
+            Serial.println(hasFlag(manager.headerFlags(), BITMASK_ACK_REQ));
+            Serial.print("Is an acknowledgement: ");
+            Serial.println(hasFlag(manager.headerFlags(), BITMASK_IS_ACK));
+            Serial.print("Is a key: ");
+            Serial.println(hasFlag(manager.headerFlags(), BITMASK_IS_KEY));
+            return true;
+        }
+    }
+    return false;
+}
+
+bool sendRadioMessage(char* buf, int len, int address = 255, int timeout=1000) {
+    manager.sendto(buf, len, address);
+    return manager.waitPacketSent(timeout);
 }
 
 void setup() {
@@ -66,58 +107,42 @@ void setup() {
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then
   // you can set transmitter powers from 5 to 23 dBm:
   rf95.setTxPower(23, false);
-}
-
-void setFlags(uint8_t flag) {
-    // cleaning up all flags
-    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_ACK_REQ);
-    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_ACK);
-    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_KEY);
-    // setting the new flag
-    manager.setHeaderFlags(flag);
-}
-
-bool hasFlag(uint8_t bitmask) {
-    uint8_t flag = manager.headerFlags();
-    return (flag & bitmask > 0);
-}
-
-bool getRadioMessage() {
-    if (manager.available()) {
-        // check if there is a message for us
-         
-        Serial.println(manager.headerTo()); //255
-        Serial.println(manager.headerFrom());//255
-        Serial.println(manager.headerId());//0
-        Serial.println(manager.headerFlags());//0
-        Serial.println(manager.thisAddress());
-        uint8_t len = sizeof(g_lastMessage);
-        if (manager.recvfrom(g_lastMessage, &len)) {
-            Serial.print(hasFlag(BITMASK_ACK_REQ));
-            Serial.print(hasFlag(BITMASK_IS_ACK));
-            Serial.print(hasFlag(BITMASK_IS_KEY));
-            Serial.println("");
-            return true;
-        }
-    }
-    return false;
-}
-
-bool sendRadioMessage(char* buf, int len, int address = 255, int timeout=1000) {
-    manager.sendto(buf, len, address);
-    return manager.waitPacketSent(timeout);
+  setFlags(0);
+  sendRadioMessage("test0", 6);
+  delay(1000);
+  setFlags(1);
+  sendRadioMessage("test1", 6);
+  delay(1000);
+  setFlags(2);
+  sendRadioMessage("test2", 6);
+  delay(1000); 
+  setFlags(3);
+  sendRadioMessage("test3", 6);
+  delay(1000);
+  setFlags(4);
+  sendRadioMessage("test4", 6);
+  delay(1000);
+  setFlags(5);
+  sendRadioMessage("test5", 6);
+  delay(1000);
+  setFlags(6);
+  sendRadioMessage("test6", 6);
+  delay(1000);
+  setFlags(7);
+  sendRadioMessage("test7", 6);
+  delay(100);
 }
 
 void loop() {
     int count = 0;
-    if (Serial.available() > 0 && count == 0) {
+    /*if (Serial.available() > 0 && count == 0) {
         count++;
         char msg[RH_RF95_MAX_MESSAGE_LEN];
         int len = Serial.readBytes(msg, RH_RF95_MAX_MESSAGE_LEN);
         Serial.print("us: ");
         Serial.print(msg);
         sendRadioMessage(msg, len);
-    }
+    }*/
     rf95.setModeRx();
     if (getRadioMessage()) {
         Serial.print("them: ");
