@@ -40,7 +40,7 @@ void loop() {
   char payload[20] = "Hello World";
   payload[19] = 0;
 
-  setFlags(true, true, false);
+  setFlags(false, false, false);
   manager.setHeaderTo(12);
   manager.sendto((uint8_t *)payload, 20, 12);
 

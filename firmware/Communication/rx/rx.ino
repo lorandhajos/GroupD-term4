@@ -23,7 +23,7 @@ const uint8_t BITMASK_IS_KEY =  0b00000100;
 
 // Radio driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
-RHDatagram manager(rf95, 12);
+RHDatagram manager(rf95, 7);
 void resetRST() {
     digitalWrite(RFM95_RST, LOW);
     delay(10);
