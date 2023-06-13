@@ -60,16 +60,6 @@ const HomeScreen = ({navigation}) => {
     });
   }, [navigation]);
 
-  React.useEffect(() => {
-    const value = UsbSerial.openDevice();
-
-    if (UsbSerial.isDeviceConnected()) {
-      ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
-    } else {
-      ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
-    }
-  }, []);
-
   return (
     <View style={styles.container}>
       {messages && (
@@ -111,7 +101,7 @@ const showAlert = () =>{
       },
     ],
   );
-  }
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -121,7 +111,6 @@ const styles = StyleSheet.create({
   menuContainer: {
     opacity: 2,
   },
-
   item: {
     padding: 8,
     marginVertical: 4,
@@ -146,39 +135,39 @@ const styles = StyleSheet.create({
     width: '85%',
   },
   menuOptions: {
-    padding: 8,
+    padding: 12,
     fontWeight: 'bold',
   },
-  sosButton:{
+  sosButton: {
     justifyContent: 'center',
     alignItems: 'center',
     height: 300,
     width: '100%',
     backgroundColor: 'red',
   },
-  sosText:{
+  sosText: {
     color: 'white',
     fontSize: 50,
     fontWeight: 'bold',
   },
-  modalFloat:{
+  modalFloat: {
     alignItems: 'flex-end',
     marginRight: 10,
     marginVertical: '20%',
   },
-  sosButton:{
+  sosButton: {
     justifyContent: 'center',
     alignItems: 'center',
     height: 300,
     width: '100%',
     backgroundColor: 'red',
   },
-  sosText:{
+  sosText: {
     color: 'white',
     fontSize: 50,
     fontWeight: 'bold',
   },
-  modalFloat:{
+  modalFloat: {
     alignItems: 'flex-end',
     marginRight: 10,
     marginVertical: '20%',
