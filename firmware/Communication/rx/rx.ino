@@ -47,6 +47,11 @@ bool hasFlag(uint8_t flag, uint8_t target) {
     return (flag & target);
 }
 
+bool sendRadioMessage(char* buf, int len, int address = 255, int timeout=1000) {
+    manager.sendto(buf, len, address);
+    return manager.waitPacketSent(timeout);
+}
+
 bool getRadioMessage() {
     if (manager.available()) {
         // check if there is a message for us
@@ -82,11 +87,6 @@ bool getRadioMessage() {
         }
     }
     return false;
-}
-
-bool sendRadioMessage(char* buf, int len, int address = 255, int timeout=1000) {
-    manager.sendto(buf, len, address);
-    return manager.waitPacketSent(timeout);
 }
 
 void setup() {
