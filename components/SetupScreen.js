@@ -36,26 +36,48 @@ const FinishSetup = (navigation, name) => {
 }
 
 function SetupScreen({navigation}) {
-  const [name, setName] = React.useState();
+  const [name, setName] = React.useState('');
+  const [nameError, setNameError] = React.useState('');
+  
+  const validateName = (text) => {
+    const regex = /^[A-Za-z0-9_.]+$/;
+    if (regex.test(text)) {
+      setName(text);
+      setNameError('');
+    } else {
+      setName(text);
+      setNameError('Only letters, numbers, underscore (_) and dot (.) are allowed.');
+    }
+  };
 
   React.useEffect(() => {
-    SecureStore.getItemAsync("privKey").then((value) => {
+    SecureStore.getItemAsync('privKey').then((value) => {
       if (value == null) {
-        console.log("No private key found, generating new one");
+        console.log('No private key found, generating new one');
         try {
           const privKey = eccrypto.generatePrivate();
-          SecureStore.setItemAsync("privKey", privKey.toString('hex'));
+          SecureStore.setItemAsync('privKey', privKey.toString('hex'));
         } catch (error) {
           console.error(error);
         }
       } else {
-        console.log("Private key found");
+        console.log('Private key found');
         FinishSetup(navigation, name);
       }
     });
   }, []);
 
   const image = require('../assets/setupImage.png');
+
+  const handleSubmit = () => {
+    const regex = /^[A-Za-z0-9_.]+$/;
+    if (regex.test(name)) {
+      setNameError('');
+      FinishSetup(navigation, name);
+    } else {
+      setNameError('Only letters, numbers, underscore (_) and dot (.) are allowed.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -65,9 +87,13 @@ function SetupScreen({navigation}) {
           <TextInput
             style={styles.input}
             placeholder="Enter Username"
-            onChange={(text) => setName(text)}
+            onChangeText={validateName}
+            value={name}
           />
-          <Pressable style={styles.communicationButton} disabled={!name} onPress={() => FinishSetup(navigation, name)}>
+          {nameError && (
+            <Text style={styles.errorText}>{nameError}</Text>
+          )}
+          <Pressable style={styles.communicationButton} disabled={!name} onPress={handleSubmit}>
             <Text style={styles.startCommunication}>Submit</Text>
           </Pressable>
         </ImageBackground>
@@ -118,12 +144,17 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   input: {
-      backgroundColor: '#f5f5f5',
-      width: '80%',
-      height: 40,
-      borderWidth: 1,
-      padding: 10,
-      marginLeft: '10%',
+    backgroundColor: '#f5f5f5',
+    width: '80%',
+    height: 40,
+    borderWidth: 1,
+    padding: 10,
+    marginLeft: '10%',
+  },
+  errorText: {
+    color: 'red',
+    marginLeft: '10%',
+    marginBottom: 10,
   },
 });
 
