@@ -9,7 +9,7 @@
 // Change to 434.0 or other frequency, must match RX's freq!
 #define RF95_FREQ 915.0
 
-constexpr double defaultFreq = 915.0;
+constexpr double defaultFrequency = 915.0;
 
 const int maxMessages = 15;
 
@@ -17,10 +17,14 @@ char g_msgArray[maxMessages][RH_RF95_MAX_MESSAGE_LEN];
 int g_freeIndexMsg = 0;
 char g_lastMessage[RH_RF95_MAX_MESSAGE_LEN];
 
+double g_currentFrequency = defaultFrequency;
+
 const uint8_t BITMASK_CLEAR_ALL = 0b00001111;
 const uint8_t BITMASK_ACK_REQ   = 0b00000001;
 const uint8_t BITMASK_IS_ACK    = 0b00000010;
 const uint8_t BITMASK_IS_KEY    = 0b00000100;
+const uint8_t BITMASK_IS_SOS    = 0b00001000;
+
 
 // Radio driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
@@ -31,7 +35,6 @@ void resetRST() {
     digitalWrite(RFM95_RST, HIGH);
     delay(10);
 }
-
 
 void setFlags(uint8_t flag) {
     // cleaning up all flags
@@ -47,14 +50,28 @@ bool hasFlag(uint8_t flag, uint8_t target) {
 bool getRadioMessage() {
     if (manager.available()) {
         // check if there is a message for us
-         
-        Serial.println(manager.headerTo()); //255
-        Serial.println(manager.headerFrom());//255
-        Serial.println(manager.headerId());//0
-        Serial.println(manager.headerFlags());//0
-        Serial.println(manager.thisAddress());
         uint8_t len = sizeof(g_lastMessage);
+        Serial.println(manager.headerFrom());
         if (manager.recvfrom(g_lastMessage, &len)) {
+            // if this is a key, send a message to the phone
+            uint8_t msgFlags = manager.headerFlags(); 
+            if (hasFlag(msgFlags, BITMASK_IS_SOS)) {
+                Serial.write("SOS");
+                Serial.write('\n');
+            }
+            if (hasFlag(msgFlags, BITMASK_IS_KEY)) {
+                Serial.write(g_lastMessage);
+                Serial.write('\n');
+            }
+            // if this is an acknowledgement
+            if (hasFlag(msgFlags, BITMASK_IS_ACK)) {
+                Serial.println(manager.headerId());
+            }
+            // if this requires an acknowledgement
+            if (hasFlag(msgFlags, BITMASK_ACK_REQ)) {
+                manager.setHeaderId(manager.headerId());
+                sendRadioMessage("0", 2);
+            }
             Serial.print("Requires acknowledgement: ");
             Serial.println(hasFlag(manager.headerFlags(), BITMASK_ACK_REQ));
             Serial.print("Is an acknowledgement: ");
@@ -82,24 +99,22 @@ void setup() {
   while (!Serial) delay(1);
   delay(100);
 
-  Serial.println("Feather LoRa RX Test!");
+  Serial.println("Start up");
 
   // manual reset
   resetRST();
 
   while (!rf95.init()) {
     Serial.println("LoRa radio init failed");
-    Serial.println("Uncomment '#define SERIAL_DEBUG' in RH_RF95.cpp for detailed debug info");
-    while (1);
   }
   Serial.println("LoRa radio init OK!");
 
   // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
-  if (!rf95.setFrequency(RF95_FREQ)) {
+  if (!rf95.setFrequency(defaultFrequency)){//915.0)) {
     Serial.println("setFrequency failed");
     while (1);
   }
-  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+  Serial.print("Set Freq to: "); Serial.println("");
 
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 
@@ -107,30 +122,6 @@ void setup() {
   // If you are using RFM95/96/97/98 modules which uses the PA_BOOST transmitter pin, then
   // you can set transmitter powers from 5 to 23 dBm:
   rf95.setTxPower(23, false);
-  setFlags(0);
-  sendRadioMessage("test0", 6);
-  delay(1000);
-  setFlags(1);
-  sendRadioMessage("test1", 6);
-  delay(1000);
-  setFlags(2);
-  sendRadioMessage("test2", 6);
-  delay(1000); 
-  setFlags(3);
-  sendRadioMessage("test3", 6);
-  delay(1000);
-  setFlags(4);
-  sendRadioMessage("test4", 6);
-  delay(1000);
-  setFlags(5);
-  sendRadioMessage("test5", 6);
-  delay(1000);
-  setFlags(6);
-  sendRadioMessage("test6", 6);
-  delay(1000);
-  setFlags(7);
-  sendRadioMessage("test7", 6);
-  delay(100);
 }
 
 void loop() {
