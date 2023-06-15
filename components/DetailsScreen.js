@@ -4,6 +4,7 @@ import { FontAwesome, Ionicons} from '@expo/vector-icons';
 import * as Databse from './Database';
 import * as Speech from 'expo-speech';
 import Voice from '@react-native-voice/voice';
+import AppContext from './AppContext';
 
 const { UsbSerial } = NativeModules;
 
@@ -16,6 +17,8 @@ function formatTime(time) {
 }
 
 function DetailsScreen({route, navigation}) {
+  const context = React.useContext(AppContext);
+  const [scheme, setScheme] = React.useState(context.scheme);
   const [messages, setMessages] = React.useState('');
   const [messageSize, setMessageSize] = React.useState('');
   const [text, setText] = React.useState('');
@@ -33,6 +36,10 @@ function DetailsScreen({route, navigation}) {
   }, [navigation]);
 
   React.useEffect(() => {
+    setScheme(context.scheme);
+  }, [context.scheme]);
+
+  React.useEffect(() => {
     UsbSerial.openDevice();
 
     if (UsbSerial.isDeviceConnected()) {
@@ -40,9 +47,7 @@ function DetailsScreen({route, navigation}) {
     } else {
       ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
     }
-  }, []);
 
-  React.useEffect(() => {
     Voice.onSpeechStart = speechStartHandler;
     Voice.onSpeechEnd = speechEndHandler;
     Voice.onSpeechResults = speechResultsHandler;
@@ -64,11 +69,11 @@ function DetailsScreen({route, navigation}) {
     const text = e.value[0];
     console.log('speechResults successful', e);
     setText(text);
-    this.textInput.value = text;
+    this.textInput.setNativeProps({ text });
   };
 
   const sendMessages = (text) => {
-    UsbSerial.write(text);
+    UsbSerial.write(text, 1, 12, 0);
     setMessages([...messages, {id: messageSize+1, message: text, time: Date.now()}]);
     Databse.insertMessage(route.params.id, text, Date.now(), 1);
     this.textInput.clear();
@@ -101,9 +106,9 @@ function DetailsScreen({route, navigation}) {
         </View>
       )}
       {item.type == 0 && (
-        <View style={styles.messageBox}>
-          <Text style={styles.message}>{item.message}</Text>
-          <Text style={styles.time}>{formatTime(item.time)}</Text>
+        <View style={[styles.messageBox, {backgroundColor: scheme === 'dark' ? '#7a7a7a' : '#ffffff'}]}>
+          <Text style={[styles.message, {color: scheme === 'dark' ? 'white' : 'black'}]}>{item.message}</Text>
+          <Text style={[styles.time, {color: scheme === 'dark' ? 'white' : 'black'}]}>{formatTime(item.time)}</Text>
         </View>
       )}
     </>
@@ -118,7 +123,7 @@ function DetailsScreen({route, navigation}) {
   let scrollRef = React.useRef(null)
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5'}]}>
       <View style={styles.messagesContainer}>
         {messages && (
           <FlatList
@@ -135,8 +140,15 @@ function DetailsScreen({route, navigation}) {
         )}
       </View>
       <View style={styles.inputContainer}>
-        <TextInput multiline={true} style={styles.input} placeholder="Message" ref={input => { this.textInput = input }}
-          onChangeText={(text) => setText(text)} />
+        <TextInput
+          multiline={true}
+          style={[styles.input, {backgroundColor: scheme === 'dark' ? '#7a7a7a' : '#ffffff', color: scheme === 'dark' ? '#ffffff' : '#000000'}]}
+          maxLength={250}
+          placeholder="Message"
+          placeholderTextColor={scheme === 'dark' ? '#ffffff' : '#000000'}
+          ref={input => { this.textInput = input }}
+          onChangeText={(text) => setText(text)}
+        />
         <Pressable style={styles.sendButton}>
           {text && text.length > 0 && (
             <Ionicons name="send" size={22} color="white" style={styles.icon} onPress={() => sendMessages(text)} />
@@ -153,7 +165,6 @@ function DetailsScreen({route, navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
   messagesContainer: {
     flex: 1,
