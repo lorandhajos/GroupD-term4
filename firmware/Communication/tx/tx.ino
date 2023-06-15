@@ -10,7 +10,6 @@
 
 
 constexpr int comnandSend = 1;
-constexpr int comnandChangeMode = 2;
 constexpr int conmandSOS = 3;
 constexpr int conmandChangeFreq = 4;
 constexpr int commandChangeAddress = 5;
@@ -101,6 +100,12 @@ void loop(){
         }
         int address = tmp.toInt();
 
+        if(address>255){
+          address = 254;
+        }
+
+        int id = random(1, 255);
+
         int flag = conversion(buffer[4]);
 
         char loadRead[250];
@@ -113,12 +118,32 @@ void loop(){
           payload[i] = loadRead[i];
         }
         payload[Plength-1]=0;
-
+        manager.setHeaderId(id);
         setFlags(flag);
         manager.sendto((uint8_t *)payload, Plength, address);
 
         manager.waitPacketSent();
         delay(10);
+        for(int i=0; i<5; i++){
+          rf95.setModeRx();
+          delay(1000);
+          if(manager.available()){
+            Serial.println("Waiting for message");
+            char buf[10];
+            if(manager.recvfrom(buf, 10)){
+              Serial.println("Recieved something");
+              int rcvID = manager.headerId();
+              if(rcvID == id){
+                Serial.println("Recieved conf");
+                break;
+              }
+            }
+          }
+          else{
+            manager.sendto((uint8_t *)payload, Plength, address);
+            manager.waitPacketSent();
+          }
+        }
       }
       else if(action == commandChangeAddress && count == 1){
         recvAddres=true;
@@ -127,31 +152,12 @@ void loop(){
           tmp.concat(buffer[i]);
         }
         int address = tmp.toInt();
+        if(address>255){
+          address = 254;
+        }
         Serial.println(address);
-        //manager.setThisAddress(address);
+        manager.setThisAddress(address);//address maximum 2 charachters
       }
-      /*
-      else if(action == comnandChangeMode && count == 1){
-        count++;
-        int mode = conversion(buffer[1]);
-        
-        if(mode==modeSleep){
-          rf95.sleep();
-        }
-        if(mode==modeStandBy){
-          rf95.setModeIdle();
-        }
-        if(mode==modeListen){
-          rf95.setModeRx();
-        }
-        if(mode==modeSend){
-          rf95.setModeTx();
-        }
-        else{
-          throwErrorToPhone(errorFailedModeChange);
-        }
-      }
-      */
       else if(action == conmandSOS && count == 1){
         count++;
         int status = conversion(buffer[1]);
@@ -160,7 +166,7 @@ void loop(){
           SOSload[30]=0;
           //setFlags(SOSflag);//My not be correct, have to figure out with andr
           while(true){
-            //manager.sendto((uint8_t *)SOSload, 31, 255);
+            manager.sendto((uint8_t *)SOSload, 31, 255);
             delay(10000);
             if(checkSerial()){
               break;
@@ -191,6 +197,28 @@ void loop(){
       else if(action ==comandEmpty && count==1){
         Serial.write(1);
       }
+      /*
+      else if(action == comnandChangeMode && count == 1){
+        count++;
+        int mode = conversion(buffer[1]);
+        
+        if(mode==modeSleep){
+          rf95.sleep();
+        }
+        if(mode==modeStandBy){
+          rf95.setModeIdle();
+        }
+        if(mode==modeListen){
+          rf95.setModeRx();
+        }
+        if(mode==modeSend){
+          rf95.setModeTx();
+        }
+        else{
+          throwErrorToPhone(errorFailedModeChange);
+        }
+      }
+      */
       else{
         count++;
         throwErrorToPhone(errorUnexpectedCommand);
