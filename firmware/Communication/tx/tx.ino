@@ -6,10 +6,11 @@
 #define RFM95_INT   7
 #define RFM95_RST   4
 
-#define RF95_FREQ 915.0
+int RF95_FREQ = 915.0;
 
 
 constexpr int comnandSend = 1;
+constexpr int comnandChangeMode = 2;
 constexpr int conmandSOS = 3;
 constexpr int conmandChangeFreq = 4;
 constexpr int commandChangeAddress = 5;
@@ -48,8 +49,12 @@ bool recvAddres = false;
 bool sentRequest = false;
 int curentAddress;
 
+//RH_RF95 instancerf95 = new RH_RF95(RFM95_CS, RFM95_INT);
+//RHDatagram instanceManager = new RHDatagram(&instancerf95, defAddress);
+
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 RHDatagram manager(rf95, defAddress);
+
 void setup(){
 
   pinMode(RFM95_RST, OUTPUT);
@@ -78,14 +83,12 @@ void setup(){
 void loop(){
   count = 0;
   if(checkConectioin()){
-    /*
     if(!recvAddres && !sentRequest){
       delay(4000);
       char request[1] = "5";
       Serial.write(request);//As for I need address
       sentRequest=true;
     }
-    */
     if(checkSerial() && count == 0){
       count++;
       char buffer[250]; //maximum length of mesage 250
@@ -120,7 +123,9 @@ void loop(){
         payload[Plength-1]=0;
         manager.setHeaderId(id);
         setFlags(flag);
-        manager.sendto((uint8_t *)payload, Plength, address);
+        Serial.println("Finished constructing payload");
+        manager.sendto((uint8_t *)payload, Plength, address);//proggram crashes here after frequency change
+        Serial.println("Snent the message");
 
         manager.waitPacketSent();
         delay(10);
@@ -142,6 +147,7 @@ void loop(){
           else{
             manager.sendto((uint8_t *)payload, Plength, address);
             manager.waitPacketSent();
+            Serial.println("Sent message again");
           }
         }
       }
@@ -184,15 +190,14 @@ void loop(){
         for(int i=1; i<4; i++){
           tmp.concat(buffer[i]);
         }
+        Serial.println("Recieved frequency");
         int freq = tmp.toInt();
           if(count==2 && freq>430 && freq<999){
-            if(!rf95.setFrequency(freq)){
-              Serial.println("OBOSRALSYA");
-            }
+            rf95.setFrequency(freq);//Something unpresidented is a bout to happen
             delay(1000);
-            Serial.println(freq);
-            restart();
+            Serial.println(freq);//recreate module here
           }
+          Serial.println("Finished changing frequency");
       }
       else if(action ==comandEmpty && count==1){
         Serial.write(1);
