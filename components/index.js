@@ -4,4 +4,4 @@ import SetupScreen from './SetupScreen'
 import Settings from './Settings'
 import db from './Database'
 
-export { HomeScreen, DetailsScreen, SetupScreen, Settings,  db };
+export { HomeScreen, DetailsScreen, SetupScreen, Settings, db };
