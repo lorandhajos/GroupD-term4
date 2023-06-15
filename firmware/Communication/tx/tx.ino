@@ -202,7 +202,6 @@ void loop(){
       else if(action ==comandEmpty && count==1){
         Serial.write(1);
       }
-      /*
       else if(action == comnandChangeMode && count == 1){
         count++;
         int mode = conversion(buffer[1]);
@@ -223,7 +222,6 @@ void loop(){
           throwErrorToPhone(errorFailedModeChange);
         }
       }
-      */
       else{
         count++;
         throwErrorToPhone(errorUnexpectedCommand);
