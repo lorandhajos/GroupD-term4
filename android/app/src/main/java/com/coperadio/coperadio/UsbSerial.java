@@ -80,10 +80,11 @@ public class UsbSerial extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
-  public void write(String str) {
+  public void write(String str, int action, int addr, int flag) {
+    String address = String.format("%03d", addr);
     if (isDeviceConnected()) {
       try {
-        byte[] data = (str + '\0').getBytes();
+        byte[] data = (str + action + address + flag + '\0').getBytes();
         port.write(data, WRITE_WAIT_MILLIS);
         Log.i("UsbSerial", "write " + str);
       } catch(IOException err) {
