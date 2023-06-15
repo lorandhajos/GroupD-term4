@@ -4,6 +4,7 @@ import { Entypo, Feather } from '@expo/vector-icons';
 import { Menu, MenuOptions, MenuTrigger, MenuOption } from 'react-native-popup-menu';
 import { CommonActions } from '@react-navigation/native';
 import * as Databse from './Database';
+import AppContext from './AppContext';
 
 const { UsbSerial } = NativeModules;
 
@@ -15,18 +16,24 @@ function formatTime(time) {
   return `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
 }
 
-const Item = ({item, navigation}) => (
+const Item = ({item, navigation, scheme}) => (
   <View style={styles.item}>
     <Pressable style={styles.contact} onPress={() => navigation.navigate('Details', {id: item.id, name: item.name})}>
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.time}>{formatTime(item.time)}</Text>
-      <Text style={styles.message} numberOfLines={2}>{item.message}</Text>
+      <Text style={[styles.name, {color: scheme === 'dark' ? 'white' : 'black'}]}>{item.name}</Text>
+      <Text style={[styles.time, {color: scheme === 'dark' ? 'white' : 'black'}]}>{formatTime(item.time)}</Text>
+      <Text style={[styles.message, {color: scheme === 'dark'  ?'white' : 'black'}]} numberOfLines={2}>{item.message}</Text>
     </Pressable>
   </View>
 );
 
 const HomeScreen = ({navigation}) => {
+  const context = React.useContext(AppContext);
+  const [scheme, setScheme] = React.useState(context.scheme);
   const [messages, setMessages] = React.useState();
+
+  React.useEffect(() => {
+    setScheme(context.scheme);
+  }, [context.scheme]);
 
   React.useEffect(() => {
     Databse.isInitialized().then((value) => {
@@ -43,14 +50,14 @@ const HomeScreen = ({navigation}) => {
         });
       }
     });
-  }, [messages]);
+  }), [messages];
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <Menu>
           <MenuTrigger>
-            <Entypo name="dots-three-vertical" size={20} color="black" />
+            <Entypo name="dots-three-vertical" size={20} color={scheme === 'dark' ? 'white' : 'black'} />
           </MenuTrigger>
           <MenuOptions>
             <MenuOption style={styles.menuOptions} onSelect={() => navigation.navigate('Settings')} text='Settings' />
@@ -58,21 +65,21 @@ const HomeScreen = ({navigation}) => {
         </Menu>
       ),
     });
-  }, [navigation]);
+  });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5'}]}>
       {messages && (
         <FlatList
           data={messages}
-          renderItem={({item}) => <Item item={item} navigation={navigation} />}
+          renderItem={({item}) => <Item item={item} navigation={navigation} scheme={scheme}/>}
           keyExtractor={item => item.id}
         />
       )}
       <Menu style={styles.modalFloat}>
         <MenuTrigger>
           <View>
-            <Feather name="alert-octagon" size={50} color="black" />
+            <Feather name="alert-octagon" size={50} color={scheme === 'dark' ? 'white' : 'black'} />
           </View>
         </MenuTrigger>
         <MenuOptions>
@@ -106,7 +113,7 @@ const showAlert = () =>{
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   menuContainer: {
     opacity: 2,
@@ -137,23 +144,6 @@ const styles = StyleSheet.create({
   menuOptions: {
     padding: 12,
     fontWeight: 'bold',
-  },
-  sosButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: 300,
-    width: '100%',
-    backgroundColor: 'red',
-  },
-  sosText: {
-    color: 'white',
-    fontSize: 50,
-    fontWeight: 'bold',
-  },
-  modalFloat: {
-    alignItems: 'flex-end',
-    marginRight: 10,
-    marginVertical: '20%',
   },
   sosButton: {
     justifyContent: 'center',
