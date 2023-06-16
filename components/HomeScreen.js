@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, ToastAndroid, Alert} from 'react-native';
 import { Entypo, Feather } from '@expo/vector-icons'; 
-import { Menu, MenuOptions, MenuTrigger, MenuOption } from 'react-native-popup-menu';
+import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import { CommonActions } from '@react-navigation/native';
 import * as Databse from './Database';
 import AppContext from './AppContext';
@@ -30,6 +30,7 @@ const HomeScreen = ({navigation}) => {
   const context = React.useContext(AppContext);
   const [scheme, setScheme] = React.useState(context.scheme);
   const [messages, setMessages] = React.useState();
+  const [isDimmed, setIsDimmed] = React.useState(false);
 
   React.useEffect(() => {
     setScheme(context.scheme);
@@ -66,47 +67,46 @@ const HomeScreen = ({navigation}) => {
       ),
     });
   });
+  
+  const showAlert = () => {
+    Alert.alert(
+      'SOS Message',
+      'Are you sure you want to send a message?',
+      [
+        {
+          text: 'Yes',
+          onPress: () => {
+            setIsDimmed(false);
+            UsbSerial.write('Please help me!',1,1,1123); 
+          },
+        },
+        {
+          text: 'No',
+          onPress: () => {
+            setIsDimmed(false);
+            Alert.alert('SOS has been cancelled');
+          },
+        },
+      ],
+    );
+  };
+  
+  
 
   return (
-    <View style={[styles.container, {backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5'}]}>
+    <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
       {messages && (
         <FlatList
           data={messages}
-          renderItem={({item}) => <Item item={item} navigation={navigation} scheme={scheme}/>}
+          renderItem={({ item }) => <Item item={item} navigation={navigation} scheme={scheme} />}
           keyExtractor={item => item.id}
         />
       )}
-      <Menu style={styles.modalFloat}>
-        <MenuTrigger>
-          <View>
-            <Feather name="alert-octagon" size={50} color={scheme === 'dark' ? 'white' : 'black'} />
-          </View>
-        </MenuTrigger>
-        <MenuOptions>
-          <Pressable style={styles.sosButton} onPress={(showAlert)}>
-            <Text style={styles.sosText}>SOS</Text>
-          </Pressable>
-        </MenuOptions>
-      </Menu>
+      {isDimmed && <View style={styles.dimmedOverlay} />}
+      <Pressable style={styles.sosButton} onPress={showAlert}>
+        <Text style={styles.sosText}>SOS</Text>
+      </Pressable>
     </View>
-  );
-}
-
-const showAlert = () =>{
-  Alert.alert(
-    'SOS Message',
-    'Are you sure you want to send message',
-    [
-      {
-        text: 'Yes',
-        onPress: () => UsbSerial.write('LOL I need help'),
-      },
-
-      {
-        text: 'No',
-        onPress: () => Alert.alert('SOS has been cancelled'),
-      },
-    ],
   );
 }
 
@@ -116,7 +116,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5f5f5",
   },
   menuContainer: {
-    opacity: 2,
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    padding: 8,
+    zIndex: 999,
   },
   item: {
     padding: 8,
@@ -146,21 +150,30 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   sosButton: {
+    position: 'absolute',
+    bottom: 16,
+    right: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    height: 300,
-    width: '100%',
+    height: 70,
+    width: 70,
+    borderRadius: 40,
     backgroundColor: 'red',
+    elevation: 5,
   },
   sosText: {
     color: 'white',
-    fontSize: 50,
+    fontSize: 18,
     fontWeight: 'bold',
   },
-  modalFloat: {
-    alignItems: 'flex-end',
-    marginRight: 10,
-    marginVertical: '20%',
+  dimmedOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 999,
   },
 });
 
