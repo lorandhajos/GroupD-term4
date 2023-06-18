@@ -12,8 +12,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import defaultBackgroundImageLight from '../assets/defaultBackgroundImageLight.png';
 import defaultBackgroundImageDark from '../assets/defaultBackgroundImageDark.png';
 
-
-
 const { UsbSerial } = NativeModules;
 
 function formatTime(time) {
@@ -21,7 +19,16 @@ function formatTime(time) {
   const hours = date.getHours();
   const minutes = date.getMinutes();
 
-  return `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+  if (date.toDateString() === new Date().toDateString()) {
+    // if date is today, return time
+    return `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+  } else if (date.toDateString() === new Date(Date.now() - 86400000).toDateString()) {
+    // if date is yesterday, return yesterday
+    return `Yesterday`;
+  } else {
+    // else return date
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  }
 }
 
 function DetailsScreen({route, navigation}) {

@@ -13,7 +13,16 @@ function formatTime(time) {
   const hours = date.getHours();
   const minutes = date.getMinutes();
 
-  return `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+  if (date.toDateString() === new Date().toDateString()) {
+    // if date is today, return time
+    return `${hours}:${minutes < 10 ? '0' + minutes : minutes}`;
+  } else if (date.toDateString() === new Date(Date.now() - 86400000).toDateString()) {
+    // if date is yesterday, return yesterday
+    return `Yesterday`;
+  } else {
+    // else return date
+    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+  }
 }
 
 const Item = ({item, navigation, scheme}) => (
