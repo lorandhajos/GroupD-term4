@@ -13,9 +13,9 @@ constexpr double defaultFrequency = 915.0;
 
 const int maxMessages = 15;
 
-char g_msgArray[maxMessages][RH_RF95_MAX_MESSAGE_LEN];
+String g_msgArray[maxMessages];
+
 int g_freeIndexMsg = 0;
-char g_lastMessage[RH_RF95_MAX_MESSAGE_LEN];
 
 double g_currentFrequency = defaultFrequency;
 
@@ -47,43 +47,69 @@ bool hasFlag(uint8_t flag, uint8_t target) {
     return (flag & target);
 }
 
+char* conversion(uint8_t from, uint8_t flag, char* message) {
+    char convertedMsg[255];
+    return "";
+}
+
+bool addMessageToArray(String message) {
+    if (g_freeIndexMsg < maxMessages) {
+        g_msgArray[g_freeIndexMsg] = message;
+        g_freeIndexMsg++;
+        return true;
+    }
+    return false;
+}
+
 bool sendRadioMessage(char* buf, int len, int address = 255, int timeout=1000) {
     manager.sendto(buf, len, address);
     return manager.waitPacketSent(timeout);
 }
 
+bool checkConnection() {
+    //if (Serial) {
+    //    return true;
+    //} 
+    return false;
+}
+void sendMessageToPhone(uint8_t from, uint8_t flag, char* msg, int len) {}
+    
 bool getRadioMessage() {
+    rf95.setModeRx();
     if (manager.available()) {
         // check if there is a message for us
-        uint8_t len = sizeof(g_lastMessage);
-        Serial.println(manager.headerFrom());
-        if (manager.recvfrom(g_lastMessage, &len)) {
-            // if this is a key, send a message to the phone
-            uint8_t msgFlags = manager.headerFlags(); 
-            if (hasFlag(msgFlags, BITMASK_IS_SOS)) {
-                Serial.write("SOS");
-                Serial.write('\n');
-            }
-            if (hasFlag(msgFlags, BITMASK_IS_KEY)) {
-                Serial.write(g_lastMessage);
-                Serial.write('\n');
-            }
-            // if this is an acknowledgement
+        char lastMessage[255];
+        uint8_t len = sizeof(lastMessage);
+        if (manager.recvfrom(lastMessage, &len)) {
+            uint8_t msgFlags = manager.headerFlags();
             if (hasFlag(msgFlags, BITMASK_IS_ACK)) {
-                Serial.println(manager.headerId());
+                //discard the ackhnowledgment messages
+                return false;
             }
-            // if this requires an acknowledgement
-            if (hasFlag(msgFlags, BITMASK_ACK_REQ)) {
-                manager.setHeaderId(manager.headerId());
-                sendRadioMessage("0", 2);
+            if (checkConnection()) {
+                uint8_t sender = manager.headerFrom();
+                len = sizeof(lastMessage);
+                sendMessageToPhone(sender, msgFlags, lastMessage, len);
+                if (hasFlag(msgFlags, BITMASK_ACK_REQ)) {
+                    delay(100);
+                    manager.setHeaderId(manager.headerId());
+                    rf95.setModeIdle();
+                    sendRadioMessage("0", 2);
+                }
+                return true;
             }
-            Serial.print("Requires acknowledgement: ");
-            Serial.println(hasFlag(manager.headerFlags(), BITMASK_ACK_REQ));
-            Serial.print("Is an acknowledgement: ");
-            Serial.println(hasFlag(manager.headerFlags(), BITMASK_IS_ACK));
-            Serial.print("Is a key: ");
-            Serial.println(hasFlag(manager.headerFlags(), BITMASK_IS_KEY));
-            return true;
+            else {
+                if (addMessageToArray(lastMessage)) {
+                    if (hasFlag(msgFlags, BITMASK_ACK_REQ)) {
+                        delay(100);
+                        manager.setHeaderId(manager.headerId());
+                        rf95.setModeIdle();
+                        sendRadioMessage("0", 2);
+                    }
+                    return true;
+                }
+                return false;
+            }
         }
     }
     return false;
@@ -134,10 +160,7 @@ void loop() {
         Serial.print(msg);
         sendRadioMessage(msg, len);
     }*/
-    rf95.setModeRx();
     if (getRadioMessage()) {
-        Serial.print("them: ");
-        Serial.println(g_lastMessage);
         /*
         // Send a reply
         uint8_t data[] = "And hello back to you";
@@ -150,5 +173,12 @@ void loop() {
         Serial.println("No messages for us");
     }
     */
+    }
+    if (g_freeIndexMsg != 0) {
+        for (int i = 0; i < g_freeIndexMsg; i++) {
+            Serial.println(g_msgArray[i]);
+            g_msgArray[i] = String("");
+        }
+        g_freeIndexMsg = 0;
     }
 }
