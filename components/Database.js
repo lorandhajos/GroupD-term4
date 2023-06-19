@@ -146,6 +146,21 @@ export const getContacts = (setContactsFunc) => {
   });
 }
 
+export const getContact = (setContactsFunc) => {
+  db.transaction(tx => {
+    tx.executeSql(
+      'SELECT * FROM contact',
+      [],
+      (_, { rows }) => {
+        setContactsFunc(rows._array);
+      },
+      (_, error) => {
+        console.error('Error getting contacts:', error);
+      }
+    );
+  });
+}
+
 export const getMessages = (contactId, setMessagesFunc) => {
   db.transaction(tx => {
     tx.executeSql(
