@@ -6,9 +6,6 @@
 #define RFM95_INT   7 // 
 #define RFM95_RST   4 // 
 
-// Change to 434.0 or other frequency, must match RX's freq!
-#define RF95_FREQ 915.0
-
 constexpr double defaultFrequency = 915.0;
 
 const int maxMessages = 15;
@@ -47,11 +44,6 @@ bool hasFlag(uint8_t flag, uint8_t target) {
     return (flag & target);
 }
 
-char* conversion(uint8_t from, uint8_t flag, char* message) {
-    char convertedMsg[255];
-    return "";
-}
-
 bool addMessageToArray(String message) {
     if (g_freeIndexMsg < maxMessages) {
         g_msgArray[g_freeIndexMsg] = message;
@@ -72,8 +64,31 @@ bool checkConnection() {
     //} 
     return false;
 }
-void sendMessageToPhone(uint8_t from, uint8_t flag, char* msg, int len) {}
-    
+
+String convert(uint8_t from, uint8_t flag, String message) {
+    String fullMsg = "";
+    if (from < 10) {
+        fullMsg.concat("00");
+        fullMsg.concat(from);
+    }
+    else if (from < 100) {
+        fullMsg.concat("0");
+        fullMsg.concat(from);
+    }
+    else {
+        fullMsg.concat(from);
+    }
+    fullMsg.concat(flag);
+    fullMsg.concat(message);
+    return fullMsg;
+}
+
+void sendMessageToPhone(String msg) {
+    char buf[255];
+    msg.toCharArray(buf, 255);
+    Serial.write(buf);
+}
+  
 bool getRadioMessage() {
     rf95.setModeRx();
     if (manager.available()) {
@@ -86,10 +101,10 @@ bool getRadioMessage() {
                 //discard the ackhnowledgment messages
                 return false;
             }
+            uint8_t sender = manager.headerFrom();
+            String convMessage = convert(sender, msgFlags, lastMessage);
             if (checkConnection()) {
-                uint8_t sender = manager.headerFrom();
-                len = sizeof(lastMessage);
-                sendMessageToPhone(sender, msgFlags, lastMessage, len);
+                sendMessageToPhone(convMessage);
                 if (hasFlag(msgFlags, BITMASK_ACK_REQ)) {
                     delay(100);
                     manager.setHeaderId(manager.headerId());
@@ -99,7 +114,7 @@ bool getRadioMessage() {
                 return true;
             }
             else {
-                if (addMessageToArray(lastMessage)) {
+                if (addMessageToArray(convMessage)) {
                     if (hasFlag(msgFlags, BITMASK_ACK_REQ)) {
                         delay(100);
                         manager.setHeaderId(manager.headerId());
@@ -151,29 +166,7 @@ void setup() {
 }
 
 void loop() {
-    int count = 0;
-    /*if (Serial.available() > 0 && count == 0) {
-        count++;
-        char msg[RH_RF95_MAX_MESSAGE_LEN];
-        int len = Serial.readBytes(msg, RH_RF95_MAX_MESSAGE_LEN);
-        Serial.print("us: ");
-        Serial.print(msg);
-        sendRadioMessage(msg, len);
-    }*/
-    if (getRadioMessage()) {
-        /*
-        // Send a reply
-        uint8_t data[] = "And hello back to you";
-        rf95.send(data, sizeof(data));
-        rf95.waitPacketSent();
-        Serial.println("Sent a reply");
-        digitalWrite(LED_BUILTIN, LOW);
-    } 
-    else {
-        Serial.println("No messages for us");
-    }
-    */
-    }
+    getRadioMessage();
     if (g_freeIndexMsg != 0) {
         for (int i = 0; i < g_freeIndexMsg; i++) {
             Serial.println(g_msgArray[i]);
