@@ -32,6 +32,7 @@ const storeCustomScheme = async (value) => {
 };
 
 LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore annoying warning
+LogBox.ignoreLogs(['ReactImageView: Image source']);
 
 function App() {
   const [scheme, setScheme] = React.useState("");

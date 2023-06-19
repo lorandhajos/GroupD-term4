@@ -1,16 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View, TextInput, Pressable, FlatList, ToastAndroid, NativeModules, TouchableOpacity, ImageBackground } from 'react-native';
-import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, Entypo } from '@expo/vector-icons';
 import * as Databse from './Database';
 import * as Speech from 'expo-speech';
 import Voice from '@react-native-voice/voice';
 import AppContext from './AppContext';
 import { Menu, MenuOptions, MenuTrigger, MenuOption } from 'react-native-popup-menu';
-import { Entypo, Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import defaultBackgroundImageLight from '../assets/defaultBackgroundImageLight.png';
-import defaultBackgroundImageDark from '../assets/defaultBackgroundImageDark.png';
 
 const { UsbSerial } = NativeModules;
 
@@ -39,8 +36,6 @@ function DetailsScreen({route, navigation}) {
   const [text, setText] = React.useState('');
   const [isListening, setIsListening] = React.useState(false);
   const [backgroundImage, setBackgroundImage] = React.useState('');
-  const defaultBackgroundImage = scheme === 'dark' ? defaultBackgroundImageDark : defaultBackgroundImageLight;
-  const defaultBackgroundImageUri = scheme === 'dark' ? defaultBackgroundImageDark.png : defaultBackgroundImageLight.png;
 
   React.useEffect(() => {
     Databse.getMessages(route.params.id, setMessages);
@@ -66,17 +61,12 @@ function DetailsScreen({route, navigation}) {
       ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
     }
 
-    Voice.onSpeechStart = speechStartHandler;
     Voice.onSpeechEnd = speechEndHandler;
     Voice.onSpeechResults = speechResultsHandler;
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     };
   }, []);
-
-  const speechStartHandler = (e) => {
-    console.log('speechStart successful', e);
-  };
 
   const speechEndHandler = (e) => {
     setIsListening(false);
@@ -97,7 +87,7 @@ function DetailsScreen({route, navigation}) {
     this.textInput.clear();
   };
 
-  const speechToText = () => {
+  const startListening = () => {
     if (!isListening) {
       setIsListening(true);
       try {
@@ -105,88 +95,66 @@ function DetailsScreen({route, navigation}) {
       } catch (error) {
         console.log('error', error);
       }
-    } else {
-      setIsListening(false);
-      Voice.stop();
     }
   };
 
-  const setDefaultBackground = async () => {
-    try {
-      await AsyncStorage.removeItem('backgroundImage');
-    } catch (error) {
-      console.log('Error removing background image:', error);
-    }
-
-    setBackgroundImage(defaultBackgroundImageUri);
+  const stopListening = () => {
+    setIsListening(false);
+    Voice.stop();
   };
+
+  const selectImage = () => {
+    ImagePicker.requestMediaLibraryPermissionsAsync().then((result) => {
+      if (result.status !== 'granted') {
+        console.log('Permission denied to access media library');
+        return;
+      }
+  
+      const options = {
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+        allowsEditing: true,
+        base64: true,
+      };
+    
+      ImagePicker.launchImageLibraryAsync(options).then((result) => {
+        if (!result.canceled) {
+          AsyncStorage.setItem('backgroundImage', result.assets[0].uri);
+          setBackgroundImage(result.assets[0].uri);
+        }
+      });
+    });
+  }
+
+  const removeBackground = () => {
+    AsyncStorage.removeItem('backgroundImage').then(() => {
+      setBackgroundImage('');
+    });
+  };
+
+  React.useLayoutEffect(() => {
+    AsyncStorage.getItem('backgroundImage').then((value) => {
+      if (value) {
+        setBackgroundImage(value);
+      }
+    });
+  }); 
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <Menu>
           <MenuTrigger>
-            <Entypo name="dots-three-vertical" size={20} color={scheme === 'dark' ? 'white' : 'black'} />
+            <Entypo name='dots-three-vertical' size={20} color={scheme === 'dark' ? 'white' : 'black'} />
           </MenuTrigger>
           <MenuOptions>
-            <MenuOption onSelect={openGallery}>
-              <Text style={styles.menuOptionText}>Wallpaper</Text>
-            </MenuOption>
-            <MenuOption onSelect={setDefaultBackground}>
-              <Text style={styles.menuOptionText}>Default Wallpaper</Text>
-            </MenuOption>
+            <MenuOption style={styles.menuOptions} onSelect={() => selectImage()} text='Wallpaper' />
+            <MenuOption style={styles.menuOptions} onSelect={() => removeBackground()} text='Remove Wallpaper' />
           </MenuOptions>
         </Menu>
       ),
     });
   });
-  
-  React.useEffect(() => {
-    const fetchBackgroundImage = async () => {
-      try {
-        const storedImageUri = await AsyncStorage.getItem('backgroundImage');
-        if (storedImageUri) {
-          setBackgroundImage(storedImageUri);
-        }
-      } catch (error) {
-        console.log('Error retrieving background image:', error);
-      }
-    };
-  
-    fetchBackgroundImage();
-  }, []); 
-
-  const openGallery = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (status !== 'granted') {
-      console.log('Permission denied to access media library');
-      return;
-    }
-  
-    const options = {
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-      allowsEditing: true,
-      base64: true,
-    };
-  
-    const result = await ImagePicker.launchImageLibraryAsync(options);
-  
-    if (!result.canceled) {
-      const selectedImageUri = result.assets[0].uri;
-      setBackgroundImage(selectedImageUri);
-      try {
-        await AsyncStorage.setItem('backgroundImage', selectedImageUri);
-      } catch (error) {
-        console.log('Error saving background image:', error);
-      }
-    }
-  };  
-
-  const textToSpeech = (text) => {
-    Speech.speak(text);
-  };
 
   const Item = ({ item }) => (
     <>
@@ -225,7 +193,7 @@ function DetailsScreen({route, navigation}) {
   );
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => textToSpeech(item.message)}>
+    <TouchableOpacity onPress={() => Speech.speak(item.message)}>
       <Item item={item} />
     </TouchableOpacity>
   );
@@ -234,32 +202,31 @@ function DetailsScreen({route, navigation}) {
 
   return (
     <ImageBackground
-      source={backgroundImage ? { uri: backgroundImage } : defaultBackgroundImage}
+      source={backgroundImage ? { uri: backgroundImage } : null}
       style={[
         styles.container,
         {
           backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5',
-          backgroundImage: backgroundImage ? `url(${backgroundImage})` : 'none',
         },
       ]}
     >
-  <View style={styles.messagesContainer}>
-    {messages && (
-      <FlatList
-        data={messages}
-        renderItem={renderItem}
-        ref={(it) => (scrollRef.current = it)}
-        keyExtractor={(item) => item.id}
-        maxToRenderPerBatch={10}
-        windowSize={10}
-        onContentSizeChange={() =>
-          scrollRef.current?.scrollToEnd({ animated: false })
-        }
-      />
-    )}
-  </View>
-  <View style={styles.inputContainer}>
-  <TextInput
+      <View style={styles.messagesContainer}>
+        {messages && (
+          <FlatList
+            data={messages}
+            renderItem={renderItem}
+            ref={(it) => (scrollRef.current = it)}
+            keyExtractor={(item) => item.id}
+            maxToRenderPerBatch={10}
+            windowSize={10}
+            onContentSizeChange={() =>
+              scrollRef.current?.scrollToEnd({ animated: false })
+            }
+          />
+        )}
+      </View>
+      <View style={styles.inputContainer}>
+        <TextInput
           multiline={true}
           style={[
             styles.input,
@@ -269,7 +236,7 @@ function DetailsScreen({route, navigation}) {
             },
           ]}
           maxLength={250}
-          placeholder="Message"
+          placeholder='Message'
           placeholderTextColor={scheme === 'dark' ? '#ffffff' : '#000000'}
           ref={(input) => {
             this.textInput = input;
@@ -279,38 +246,40 @@ function DetailsScreen({route, navigation}) {
         <Pressable style={styles.sendButton}>
           {text && text.length > 0 && (
             <Ionicons
-              name="send"
+              name='send'
               size={22}
-              color="white"
+              color='white'
               style={styles.icon}
               onPress={() => sendMessages(text)}
             />
           )}
-          {!text && (
+          {!text && !isListening && (
             <FontAwesome
-              name="microphone"
+              name='microphone'
               size={24}
-              color="white"
+              color='white'
               style={styles.icon}
-              onPress={() => speechToText()}
+              onPress={() => startListening()}
+            />
+          )}
+          {isListening && (
+            <FontAwesome
+              name='stop'
+              size={24}
+              color='white'
+              style={styles.icon}
+              onPress={() => stopListening()}
             />
           )}
         </Pressable>
       </View>
-</ImageBackground>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundImage: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-    },
   },
   messagesContainer: {
     flex: 1,
@@ -364,10 +333,8 @@ const styles = StyleSheet.create({
     width: 24,
     textAlign: 'center',
   },
-  menuOptionText: {
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    fontSize: 16,
+  menuOptions: {
+    padding: 12,
   },
 });
 
