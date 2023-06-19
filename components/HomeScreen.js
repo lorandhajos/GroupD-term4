@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, ToastAndroid, Alert} from 'react-native';
-import { Entypo, Feather } from '@expo/vector-icons'; 
+import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, Alert } from 'react-native';
+import { Entypo } from '@expo/vector-icons'; 
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import { CommonActions } from '@react-navigation/native';
 import * as Databse from './Database';
@@ -67,10 +67,11 @@ const HomeScreen = ({navigation}) => {
       headerRight: () => (
         <Menu>
           <MenuTrigger>
-            <Entypo name="dots-three-vertical" size={20} color={scheme === 'dark' ? 'white' : 'black'} />
+            <Entypo name='dots-three-vertical' size={20} color={scheme === 'dark' ? 'white' : 'black'} />
           </MenuTrigger>
           <MenuOptions>
             <MenuOption style={styles.menuOptions} onSelect={() => navigation.navigate('Settings')} text='Settings' />
+            <MenuOption style={styles.menuOptions} onSelect={() => navigation.navigate('AddContact')} text='Add Contact' />
           </MenuOptions>
         </Menu>
       ),
@@ -86,13 +87,14 @@ const HomeScreen = ({navigation}) => {
           text: 'Yes',
           onPress: () => {
             setIsDimmed(false);
-            UsbSerial.write('Please help me!',1,1,1123); 
+            UsbSerial.startSos();
           },
         },
         {
           text: 'No',
           onPress: () => {
             setIsDimmed(false);
+            UsbSerial.stopSos();
             Alert.alert('SOS has been cancelled');
           },
         },
@@ -100,8 +102,6 @@ const HomeScreen = ({navigation}) => {
     );
   };
   
-  
-
   return (
     <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
       {messages && (

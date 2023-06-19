@@ -20,11 +20,15 @@ function openDatabase() {
 function createTables() {
   db.transaction(tx => {
     tx.executeSql(
-      'CREATE TABLE contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, pubKey TEXT)'
+      'CREATE TABLE contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, address INTEGER, pubKey TEXT)'
     );
 
     tx.executeSql(
-      'CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, contactId INTEGER NOT NULL, message TEXT NOT NULL, time INTEGER NOT NULL, type INTEGER NOT NULL, FOREIGN KEY(contactId) REFERENCES contacts(id))',
+      'CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, contactId INTEGER NOT NULL, message TEXT NOT NULL, time INTEGER NOT NULL, type INTEGER NOT NULL, FOREIGN KEY(contactId) REFERENCES contacts(id))'
+    );
+
+    tx.executeSql(
+      'CREATE TABLE contact (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, address INTEGER NOT NULL, pubKey TEXT)'
     );
   }, (error) => {
     console.error('Error creating tables:', error);
@@ -80,6 +84,31 @@ export const fillDatabase = () => {
   insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
   insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
   insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+}
+
+export const addContactInfo = (name, address, pubKey) => {
+  db.transaction(tx => {
+    tx.executeSql(
+      'INSERT INTO contact (name, address, pubKey) VALUES (?, ?, ?)',
+      [name, address, pubKey]
+    );
+  });
+}
+
+export const addContact = (name, address, pubKey) => {
+  db.transaction(tx => {
+    tx.executeSql(
+      'INSERT INTO contacts (name, address, pubKey) VALUES (?, ?, ?)',
+      [name, address, pubKey],
+      (_, results) => {
+        console.log('Contact added successfully!');
+        insertMessage(results.insertId, 'You have added a new contact! Say hello!', Date.now());
+      }
+    );
+  },
+  (error) => {
+    console.error('Error adding contact:', error);
+  });
 }
 
 export const insertContact = (name) => {

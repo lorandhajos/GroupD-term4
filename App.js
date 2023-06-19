@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { HomeScreen, DetailsScreen, SetupScreen, Settings } from './components';
+import { HomeScreen, DetailsScreen, SetupScreen, Settings, AddContactScreen } from './components';
 import { MenuProvider } from 'react-native-popup-menu';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppContext from './components/AppContext';
@@ -57,6 +57,7 @@ function App() {
               <Stack.Screen name="Details" component={DetailsScreen} options={({ route }) => ({ title: route.params.name })} />
               <Stack.Screen name="SetupScreen" component={SetupScreen} />
               <Stack.Screen name="Settings" component={Settings} />
+              <Stack.Screen name="AddContact" component={AddContactScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </SafeAreaProvider>
