@@ -19,9 +19,11 @@ constexpr int comandEmpty = 9;
 constexpr int SOStoON = 1;
 constexpr int SOStoOFF = 0;
 
-const uint8_t BITMASK_ACK_REQ = 0b00000001;
-const uint8_t BITMASK_IS_ACK =  0b00000010;
-const uint8_t BITMASK_IS_KEY =  0b00000100;
+const uint8_t BITMASK_CLEAR_ALL = 0b00001111;
+const uint8_t BITMASK_ACK_REQ   = 0b00000001;
+const uint8_t BITMASK_IS_ACK    = 0b00000010;
+const uint8_t BITMASK_IS_KEY    = 0b00000100;
+const uint8_t BITMASK_IS_SOS    = 0b00001000;
 
 constexpr int SOSflag = 8;
 
@@ -168,6 +170,7 @@ void loop(){
         if(status == SOStoON && count==2){
           char SOSload[31]="SOS, I am in an emergency, SOS";
           SOSload[30]=0;
+          setFlags(9);
           while(true){
             manager.sendto((uint8_t *)SOSload, 31, 255);
             delay(10000);
@@ -266,33 +269,16 @@ void sendMessageToPhone(char* msg){
 
 }
 
-void setFlags(bool reqAck, bool isAck, bool isKey) {
-    if (reqAck) {
-        manager.setHeaderFlags(BITMASK_ACK_REQ);
-    } else {
-        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_ACK_REQ);
-    }
-    if (isAck) {
-        manager.setHeaderFlags(BITMASK_IS_ACK);
-    } else {
-        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_ACK);
-    }
-    if (isKey) {
-        manager.setHeaderFlags(BITMASK_IS_KEY);
-    } else {
-        manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_KEY);
-    }
-}
-
 void setFlags(uint8_t flag) {
     // cleaning up all flags
-    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_ACK_REQ);
-    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_ACK);
-    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_IS_KEY);
+    manager.setHeaderFlags(RH_FLAGS_NONE, BITMASK_CLEAR_ALL);
     // setting the new flag
     manager.setHeaderFlags(flag);
 }
 
+bool hasFlag(uint8_t flag, uint8_t target) {
+    return (flag & target);
+}
 
 void restart(){
   digitalWrite(RFM95_RST, LOW);
