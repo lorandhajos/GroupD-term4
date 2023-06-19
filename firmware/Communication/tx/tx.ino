@@ -30,14 +30,14 @@ constexpr int modeStandBy = 6;
 constexpr int modeListen = 7;
 constexpr int modeSend = 8;
 
-constexpr int errorUnexpected = 40;
-constexpr int errorFailedStart = 41;
-constexpr int errorFailedToSend = 42;
-constexpr int errorFailedConnect = 43;
-constexpr int errorFailedSerial = 44;
-constexpr int errorFailedChangeFreq = 45;
-constexpr int errorFailedModeChange = 46;
-constexpr int errorUnexpectedCommand = 47;
+constexpr int errorUnexpected = 41;
+constexpr int errorFailedStart = 42;
+constexpr int errorFailedToSend = 43;
+constexpr int errorFailedConnect = 44;
+constexpr int errorFailedSerial = 45;
+constexpr int errorFailedChangeFreq = 46;
+constexpr int errorFailedModeChange = 47;
+constexpr int errorUnexpectedCommand = 48;
 
 const int ASCInum[] = {10, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57};
 const int UTFnum[] = {-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
@@ -80,7 +80,7 @@ void setup(){
 }
 void loop(){
   count = 0;
-  if(checkConectioin()){
+  if(checkConnectioin()){
     if(!recvAddres && !sentRequest){
       delay(4000);
       char request[1] = "5";
@@ -253,21 +253,17 @@ bool checkConnectioin(){
   return false;
 }
 
-void sendMessageToPhone(uint8_t from, uint8_t flag, char* message, int length){
-  char messageToPhone[length+4];
-  char fromConv[3]=(char)from;
-  messageToPhone[lenght+3] = 0;
-  for(int i=0; i<3;i++){
-    messageToPhone[i]=fromConv[i];
-  }
-  for(int i=3; i<length+3; i++){
-    messageToPhone[i]=message[i-3];
-  }
-  Serial.write(messageToPhone);
+void throwErrorToPhone(int errorType){
+  String errorStr;
+  char sendError[3];
+  errorStr = String(errorType);
+  errorStr.toCharArray(sendError, 3);
+  sendError[2] = 0;
+  Serial.write(sendError);
 }
 
-void throwErrorToPhone(int errorType){//make it char!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  Serial.write(errorType);
+void sendMessageToPhone(char* msg){
+
 }
 
 void setFlags(bool reqAck, bool isAck, bool isKey) {
