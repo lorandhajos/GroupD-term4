@@ -49,8 +49,6 @@ bool recvAddres = false;
 bool sentRequest = false;
 int curentAddress;
 
-//RH_RF95 instancerf95 = new RH_RF95(RFM95_CS, RFM95_INT);
-//RHDatagram instanceManager = new RHDatagram(&instancerf95, defAddress);
 
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 RHDatagram manager(rf95, defAddress);
@@ -170,7 +168,6 @@ void loop(){
         if(status == SOStoON && count==2){
           char SOSload[31]="SOS, I am in an emergency, SOS";
           SOSload[30]=0;
-          //setFlags(SOSflag);//My not be correct, have to figure out with andr
           while(true){
             manager.sendto((uint8_t *)SOSload, 31, 255);
             delay(10000);
@@ -193,13 +190,13 @@ void loop(){
         Serial.println("Recieved frequency");
         int freq = tmp.toInt();
           if(count==2 && freq>430 && freq<999){
-            rf95.setFrequency(freq);//Something unpresidented is a bout to happen
+            rf95.setFrequency(freq);//Something unpresidented is a bout to happen NEEDS TO BE TESTED!!!!!!!!!!!!!!!!!!!!
             delay(1000);
             Serial.println(freq);//recreate module here
           }
           Serial.println("Finished changing frequency");
       }
-      else if(action ==comandEmpty && count==1){
+      else if(action==comandEmpty && count==1){
         Serial.write(1);
       }
       else if(action == comnandChangeMode && count == 1){
@@ -249,22 +246,24 @@ int conversion(int buffer){
   return -2;
 }
 
-void setFrequency(){
-
-}
-
-void send(){
-
-}
-void SOS(){
-
-}
-
-bool checkConectioin(){
+bool checkConnectioin(){
   if(Serial){
     return true;
   }
   return false;
+}
+
+void sendMessageToPhone(uint8_t from, uint8_t flag, char* message, int length){
+  char messageToPhone[length+4];
+  char fromConv[3]=(char)from;
+  messageToPhone[lenght+3] = 0;
+  for(int i=0; i<3;i++){
+    messageToPhone[i]=fromConv[i];
+  }
+  for(int i=3; i<length+3; i++){
+    messageToPhone[i]=message[i-3];
+  }
+  Serial.write(messageToPhone);
 }
 
 void throwErrorToPhone(int errorType){//make it char!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
