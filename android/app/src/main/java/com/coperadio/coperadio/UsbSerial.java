@@ -80,17 +80,68 @@ public class UsbSerial extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
-  public void write(String str, int action, int addr, int flag) {
-    String address = String.format("%03d", addr);
+  public void write(String str) {
     if (isDeviceConnected()) {
       try {
-        byte[] data = (str + action + address + flag + '\0').getBytes();
+        byte[] data = (str + '\0').getBytes();
         port.write(data, WRITE_WAIT_MILLIS);
         Log.i("UsbSerial", "write " + str);
       } catch(IOException err) {
         Log.e("UsbSerial", "write error");
       }
     }
+  }
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public void setOption(int action, int val, boolean longBytes) {
+    if (longBytes) {
+      String value = String.format("%03d", val);
+      write(action + value);
+      return;
+    }
+    write("" + action + val);
+  }
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public void setOption(int action, int value) {
+    write("" + action + value);
+  }
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public void sendMessage(String str, int addr, int flag) {
+    String address = String.format("%03d", addr);
+    write(1 + address + flag + str);
+  }
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public void sendMessage(String str, int addr) {
+    String address = String.format("%03d", addr);
+    write(1 + address + 0 + str);
+  }
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public void startSos() {
+    setOption(3, 1);
+  }
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public void stopSos() {
+    setOption(3, 9);
+  }
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public void setFrequency(int freq) {
+    setOption(4, freq, true);
+  }
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public void setAddress(int addr) {
+    setOption(5, addr, true);
+  }
+
+  @ReactMethod(isBlockingSynchronousMethod = true)
+  public void setMode(int mode) {
+    setOption(2, mode);
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
