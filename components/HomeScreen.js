@@ -86,13 +86,14 @@ const HomeScreen = ({navigation}) => {
           text: 'Yes',
           onPress: () => {
             setIsDimmed(false);
-            UsbSerial.write('Please help me!',1,1,1123); 
+            UsbSerial.startSos();
           },
         },
         {
           text: 'No',
           onPress: () => {
             setIsDimmed(false);
+            UsbSerial.stopSos();
             Alert.alert('SOS has been cancelled');
           },
         },
