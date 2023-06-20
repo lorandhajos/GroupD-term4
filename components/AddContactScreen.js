@@ -26,9 +26,18 @@ const AddContactScreen = ({navigation}) => {
 
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
-    Databse.addContact("test", "test", "data");
-    //Databse.addContact(data.name. data.address, data.publicKey)
-    alert(data);
+    if (type != 256)
+      return;
+
+    try {
+      const contact = JSON.parse(data);
+      Databse.addContact(contact.name, contact.address, contact.pubKey)
+      console.log(`Bar code with type ${type} and data ${data} has been scanned!`);
+    } catch (error) {
+      console.error(error);
+      return;
+    }
+
     navigation.dispatch(() => {
       return CommonActions.reset({
         routes: [
@@ -40,14 +49,16 @@ const AddContactScreen = ({navigation}) => {
   };
 
   if (hasPermission === null) {
-    return <Text>Requesting for camera permission</Text>;
+    return <Text style={[styles.prompt, {color: scheme === 'dark' ? 'white' : 'black'}]}>Requesting for camera permission</Text>;
   }
   if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
+    return <Text style={[styles.prompt, {color: scheme === 'dark' ? 'white' : 'black'}]}>No access to camera</Text>;
   }
 
   return (
     <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
+      <Text style={[styles.prompt, {color: scheme === 'dark' ? 'white' : 'black'}]}>Scan QR Code</Text>
+      <Text style={[styles.explanation, {color: scheme === 'dark' ? 'white' : 'black'}]}>To add a new contact you need to scan their QR code.</Text>
       <BarCodeScanner
         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
         style={StyleSheet.absoluteFillObject}
@@ -65,8 +76,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    padding: 8,
     zIndex: 999,
+  },
+  prompt: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  explanation: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
   },
 });
 

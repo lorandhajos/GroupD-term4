@@ -84,6 +84,8 @@ export const fillDatabase = () => {
   insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
   insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
   insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+
+  addContactInfo('John Doe', '123', '321');
 }
 
 export const addContactInfo = (name, address, pubKey) => {
@@ -131,7 +133,7 @@ export const insertMessage = (contactId, message, time, type = 0) => {
   });
 }
 
-export const getContacts = (setContactsFunc) => {
+export const getContacts = async (setContactsFunc) => {
   db.transaction(tx => {
     tx.executeSql(
       'SELECT * FROM contacts',
@@ -146,13 +148,13 @@ export const getContacts = (setContactsFunc) => {
   });
 }
 
-export const getContact = (setContactsFunc) => {
+export const getContact = (setContactFunc) => {
   db.transaction(tx => {
     tx.executeSql(
       'SELECT * FROM contact',
       [],
       (_, { rows }) => {
-        setContactsFunc(rows._array);
+        setContactFunc(rows._array);
       },
       (_, error) => {
         console.error('Error getting contacts:', error);

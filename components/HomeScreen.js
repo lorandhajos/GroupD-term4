@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, Alert, TouchableWithoutFeedback } from 'react-native';
+import React from 'react';
+import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, Alert } from 'react-native';
 import { Entypo } from '@expo/vector-icons'; 
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import { CommonActions } from '@react-navigation/native';
-import * as Databse from './Database';
+import * as Database from './Database';
 import AppContext from './AppContext';
-import QRCode from 'react-native-qrcode-svg';
 import * as Location from 'expo-location';
 
 const { UsbSerial } = NativeModules;
@@ -42,8 +41,6 @@ const HomeScreen = ({navigation}) => {
   const [scheme, setScheme] = React.useState(context.scheme);
   const [messages, setMessages] = React.useState();
   const [isDimmed, setIsDimmed] = React.useState(false);
-  const [showQRCode, setShowQRCode] = React.useState(false);
-  const [qrCodeValue, setQRCodeValue] = React.useState('');
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -52,9 +49,9 @@ const HomeScreen = ({navigation}) => {
   }, [context.scheme]);
 
   React.useEffect(() => {
-    Databse.isInitialized().then((value) => {
+    Database.isInitialized().then((value) => {
       if (value) {
-        Databse.getHomeScreenData(setMessages);
+        Database.getHomeScreenData(setMessages);
       } else {
         navigation.dispatch(() => {
           return CommonActions.reset({
@@ -68,20 +65,6 @@ const HomeScreen = ({navigation}) => {
     });
   }, []); // Removed extra parenthesis and comma here
 
-  const toggleQRCode = () => {
-    setShowQRCode(!showQRCode);
-  };
-
-  const QRCodeGenerator = () => {
-    return showQRCode ? (
-      <TouchableWithoutFeedback onPress={() => setShowQRCode(false)}>
-        <View style={[styles.qrCodeContainer, { backgroundColor: scheme === 'light' ? 'white' : 'white' }]}>
-          <QRCode value={"asd"} size={200} />
-        </View>
-      </TouchableWithoutFeedback>
-    ) : null;
-  };
-
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -91,13 +74,13 @@ const HomeScreen = ({navigation}) => {
           </MenuTrigger>
           <MenuOptions>
             <MenuOption style={styles.menuOptions} onSelect={() => navigation.navigate('Settings')} text='Settings' />
-            <MenuOption style={styles.menuOptions} onSelect={() => navigation.navigate('AddContact')} text='Add Contact' />
-            <MenuOption style={styles.menuOptions} onSelect={() => toggleQRCode()} text='QR Code' />
+            <MenuOption style={styles.menuOptions} onSelect={() => navigation.navigate('Add Contact')} text='Add Contact' />
+            <MenuOption style={styles.menuOptions} onSelect={() => navigation.navigate('QR Code')} text='QR Code' />
           </MenuOptions>
         </Menu>
       ),
     });
-  }, []);
+  });
 
   const showAlert = () => {
     Alert.alert(
@@ -144,22 +127,19 @@ const HomeScreen = ({navigation}) => {
   }, []);
 
   return (
-    <TouchableWithoutFeedback onPress={() => setShowQRCode(false)}>
-      <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
-        {messages && (
-          <FlatList
-            data={messages}
-            renderItem={({ item }) => <Item item={item} navigation={navigation} scheme={scheme} />}
-            keyExtractor={item => item.id}
-          />
-        )}
-        {isDimmed && <View style={styles.dimmedOverlay} />}
-        <Pressable style={styles.sosButton} onPress={showAlert}>
-          <Text style={styles.sosText}>SOS</Text>
-        </Pressable>
-        {QRCodeGenerator()}
-      </View>
-    </TouchableWithoutFeedback>
+    <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
+      {messages && (
+        <FlatList
+          data={messages}
+          renderItem={({ item }) => <Item item={item} navigation={navigation} scheme={scheme} />}
+          keyExtractor={item => item.id}
+        />
+      )}
+      {isDimmed && <View style={styles.dimmedOverlay} />}
+      <Pressable style={styles.sosButton} onPress={showAlert}>
+        <Text style={styles.sosText}>SOS</Text>
+      </Pressable>
+    </View>
   );
 };
 
@@ -238,22 +218,6 @@ const styles = StyleSheet.create({
     width: 56,
     borderRadius: 28,
     backgroundColor: 'white',
-    elevation: 5,
-  },
-
-  qrCodeContainer: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{ translateX: -100 }, { translateY: -100 }],
-    zIndex: 999,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    padding: 16,
-    borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
     elevation: 5,
   },
 });
