@@ -58,7 +58,7 @@ function App() {
               <Stack.Screen name="Details" component={DetailsScreen} options={({ route }) => ({ title: route.params.name })} />
               <Stack.Screen name="SetupScreen" component={SetupScreen} />
               <Stack.Screen name="Settings" component={Settings} />
-              <Stack.Screen name="AddContact" component={AddContactScreen} />
+              <Stack.Screen name="Add Contact" component={AddContactScreen} />
             </Stack.Navigator>
           </NavigationContainer>
         </SafeAreaProvider>

@@ -131,7 +131,7 @@ export const insertMessage = (contactId, message, time, type = 0) => {
   });
 }
 
-export const getContacts = (setContactsFunc) => {
+export const getContacts = async (setContactsFunc) => {
   db.transaction(tx => {
     tx.executeSql(
       'SELECT * FROM contacts',
@@ -146,13 +146,13 @@ export const getContacts = (setContactsFunc) => {
   });
 }
 
-export const getContact = (setContactsFunc) => {
+export const getContact = (setContactFunc) => {
   db.transaction(tx => {
     tx.executeSql(
       'SELECT * FROM contact',
       [],
       (_, { rows }) => {
-        setContactsFunc(rows._array);
+        setContactFunc(rows._array);
       },
       (_, error) => {
         console.error('Error getting contacts:', error);
