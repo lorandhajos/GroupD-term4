@@ -119,13 +119,13 @@ void sendAllMessagesToPhone() {
 }
 void sendAck(uint8_t id, char* contents, uint8_t address=255) {
     manager.setHeaderId(id);
-    //rf95.setModeIdle();
+    rf95.setModeIdle();
     setFlags(IsAckMask);
     sendRadioMessage(contents, sizeof(contents), address);
 }
   
 bool getRadioMessage() {
-    //rf95.setModeRx();
+    rf95.setModeRx();
     if (manager.available()) {
         // check if there is a message for us
         char lastMessage[255];
@@ -142,14 +142,15 @@ bool getRadioMessage() {
                 sendMessageToPhone(convMessage);
                 if (hasFlag(msgFlags, ReqAckMask)) {
                     delay(100);
-                    sendAck(manager.headerId(), "0", 2);
+                    sendAck(manager.headerId(), "0", sender);
                 }
                 return true;
             }
             addMessageToArray(convMessage);
             if (hasFlag(msgFlags, ReqAckMask)) {
+                Serial.println("Trying to send ack");
                 delay(100);
-                sendAck(manager.headerId(), "0", 2);
+                sendAck(manager.headerId(), "0", sender);
             }
             return true;
         }
