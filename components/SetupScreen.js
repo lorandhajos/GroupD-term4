@@ -53,12 +53,12 @@ function SetupScreen({navigation}) {
   };
 
   const validateAddress = (number) => {
-    const regex = /^[]/;
+    const regex = /^[0-9]/;
     if (regex.test(number)){
-      setAddress(address);
+      setAddress(number);
       setAddressError('');
     } else {
-      setAddress(address)
+      setAddress(number)
       setAddressError('It is only possible to enter three numbers.')
     }
   }
@@ -75,7 +75,7 @@ function SetupScreen({navigation}) {
         }
       } else {
         console.log('Private key found');
-        FinishSetup(navigation, name);
+        // FinishSetup(navigation, name);
       }
     });
   }, []);
@@ -106,8 +106,9 @@ function SetupScreen({navigation}) {
           {nameError && (
             <Text style={styles.errorText}>{nameError}</Text>
           )}
-          <TextInput 
-            style={styles.input}
+          <TextInput
+            maxLength={3}
+            style={styles.addressInput}
             placeholder="Enter Address"
             onChangeText={validateAddress}
             value={address}
@@ -173,6 +174,15 @@ const styles = StyleSheet.create({
     padding: 10,
     marginLeft: '10%',
   },
+  addressInput: {
+    backgroundColor: '#f5f5f5',
+    width: '80%',
+    height: 40,
+    borderWidth: 1,
+    padding: 10,
+    marginLeft: '10%',
+    marginTop: 10,
+  },
   errorText: {
     color: 'red',
     marginLeft: '10%',
@@ -181,7 +191,8 @@ const styles = StyleSheet.create({
   errorAddress: {
     color: 'red',
     marginLeft: '10%',
-    marginBottom: 20,
+    marginTop: 10,
+    marginBottom: 15,
   }
 });
 
