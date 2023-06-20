@@ -48,7 +48,6 @@ int count = 0;
 
 constexpr int defAddress = 1;
 bool recvAddres = false;
-bool sentRequest = false;
 int curentAddress;
 
 
@@ -82,14 +81,7 @@ void setup(){
 }
 void loop(){
   count = 0;
-  //manager.sendto((uint8_t *)"payload", 7, 12);
   if(checkConnectioin()){
-    if(!recvAddres && !sentRequest){
-      delay(4000);
-      char request[1] = "5";
-      Serial.write(request);//As for I need address
-      sentRequest=true;
-    }
     if(checkSerial() && count == 0){
       count++;
       char buffer[250]; //maximum length of mesage 250
