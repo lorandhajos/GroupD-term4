@@ -10,7 +10,7 @@ constexpr double defaultFrequency = 915.0;
 
 const int maxMessages = 25;
 
-// C-style strings are probably more memory efficient, but an array of an array of chars directly is difficult
+// C-style strings are probably more memory efficient, but an array of an array of chars is difficult to deal with
 // Convert the String to char[] before sending it over the cable!
 String g_msgArray[maxMessages];
 
@@ -148,7 +148,6 @@ bool getRadioMessage() {
             }
             addMessageToArray(convMessage);
             if (hasFlag(msgFlags, ReqAckMask)) {
-                Serial.println("Trying to send ack");
                 delay(100);
                 sendAck(manager.headerId(), "0", sender);
             }
