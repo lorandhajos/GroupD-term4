@@ -38,6 +38,8 @@ const FinishSetup = (navigation, name) => {
 function SetupScreen({navigation}) {
   const [name, setName] = React.useState('');
   const [nameError, setNameError] = React.useState('');
+  const [address, setAddress] = React.useState('');
+  const [addressError, setAddressError] = React.useState('');
   
   const validateName = (text) => {
     const regex = /^[A-Za-z0-9_.]+$/;
@@ -49,6 +51,17 @@ function SetupScreen({navigation}) {
       setNameError('Only letters, numbers, underscore (_) and dot (.) are allowed.');
     }
   };
+
+  const validateAddress = (number) => {
+    const regex = /^[]/;
+    if (regex.test(number)){
+      setAddress(address);
+      setAddressError('');
+    } else {
+      setAddress(address)
+      setAddressError('It is only possible to enter three numbers.')
+    }
+  }
 
   React.useEffect(() => {
     SecureStore.getItemAsync('privKey').then((value) => {
@@ -92,6 +105,15 @@ function SetupScreen({navigation}) {
           />
           {nameError && (
             <Text style={styles.errorText}>{nameError}</Text>
+          )}
+          <TextInput 
+            style={styles.input}
+            placeholder="Enter Address"
+            onChangeText={validateAddress}
+            value={address}
+          />
+          {addressError && (
+            <Text style={styles.errorAddress}>{addressError}</Text>
           )}
           <Pressable style={styles.communicationButton} disabled={!name} onPress={handleSubmit}>
             <Text style={styles.startCommunication}>Submit</Text>
@@ -156,6 +178,11 @@ const styles = StyleSheet.create({
     marginLeft: '10%',
     marginBottom: 10,
   },
+  errorAddress: {
+    color: 'red',
+    marginLeft: '10%',
+    marginBottom: 20,
+  }
 });
 
 export default SetupScreen;
