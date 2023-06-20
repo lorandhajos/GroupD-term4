@@ -82,6 +82,7 @@ void setup(){
 }
 void loop(){
   count = 0;
+  //manager.sendto((uint8_t *)"payload", 7, 12);
   if(checkConnectioin()){
     if(!recvAddres && !sentRequest){
       delay(4000);
@@ -129,25 +130,27 @@ void loop(){
 
         manager.waitPacketSent();
         delay(10);
-        for(int i=0; i<5; i++){
-          rf95.setModeRx();
-          delay(1000);
-          if(manager.available()){
-            Serial.println("Waiting for message");
-            char buf[10];
-            if(manager.recvfrom(buf, 10)){
-              Serial.println("Recieved something");
-              int rcvID = manager.headerId();
-              if(rcvID == id){
-                Serial.println("Recieved conf");
-                break;
+        if(flag==1){
+          for(int i=0; i<5; i++){
+            rf95.setModeRx();
+            delay(1000);
+            if(manager.available()){
+              Serial.println("Waiting for message");
+              char buf[10];
+              if(manager.recvfrom(buf, 10)){
+                Serial.println("Recieved something");
+                int rcvID = manager.headerId();
+                if(rcvID == id){
+                  Serial.println("Recieved conf");
+                  break;
+                }
               }
             }
-          }
-          else{
-            manager.sendto((uint8_t *)payload, Plength, address);
-            manager.waitPacketSent();
-            Serial.println("Sent message again");
+            else{
+              manager.sendto((uint8_t *)payload, Plength, address);
+              manager.waitPacketSent();
+              Serial.println("Sent message again");
+            }
           }
         }
       }
@@ -167,13 +170,16 @@ void loop(){
       else if(action == conmandSOS && count == 1){
         count++;
         int status = conversion(buffer[1]);
+        char SOSload[len-1];
         if(status == SOStoON && count==2){
-          char SOSload[31]="SOS, I am in an emergency, SOS";
-          SOSload[30]=0;
-          setFlags(9);
+          for(int i=2; i<len-1; i++){
+            SOSload[i-2]=buffer[i];
+          }
+          SOSload[len-3]=0;
+          setFlags(8);
           while(true){
-            manager.sendto((uint8_t *)SOSload, 31, 255);
-            delay(10000);
+            manager.sendto((uint8_t *)SOSload, len-2, 255);
+            delay(1000);
             if(checkSerial()){
               break;
             }
@@ -285,4 +291,29 @@ void restart(){
   delay(10);
   digitalWrite(RFM95_RST, HIGH);
   delay(10);
+}
+
+
+String convert(uint8_t from, uint8_t flag, String message) {
+    String fullMsg = "";
+    if (from < 10) {
+        fullMsg.concat("00");
+        fullMsg.concat(from);
+    }
+    else if (from < 100) {
+        fullMsg.concat("0");
+        fullMsg.concat(from);
+    }
+    else {
+        fullMsg.concat(from);
+    }
+    fullMsg.concat(flag);
+    fullMsg.concat(message);
+    return fullMsg;
+}
+
+void sendMessageToPhone(String msg) {
+    char buf[255];
+    msg.toCharArray(buf, 255);
+    Serial.write(buf);
 }
