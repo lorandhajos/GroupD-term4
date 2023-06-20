@@ -81,7 +81,7 @@ function DetailsScreen({route, navigation}) {
   };
 
   const sendMessages = (text) => {
-    UsbSerial.sendMessage(text, 12);
+    UsbSerial.sendMessage(text, 12, 0);
     setMessages([...messages, { id: messageSize + 1, message: text, time: Date.now() }]);
     Databse.insertMessage(route.params.id, text, Date.now(), 1);
     this.textInput.clear();

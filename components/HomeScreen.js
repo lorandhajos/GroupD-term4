@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, Alert, TouchableWithoutFeedback } from 'react-native';
 import { Entypo } from '@expo/vector-icons'; 
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
@@ -6,6 +6,7 @@ import { CommonActions } from '@react-navigation/native';
 import * as Databse from './Database';
 import AppContext from './AppContext';
 import QRCode from 'react-native-qrcode-svg';
+import * as Location from 'expo-location';
 
 const { UsbSerial } = NativeModules;
 
@@ -43,6 +44,8 @@ const HomeScreen = ({navigation}) => {
   const [isDimmed, setIsDimmed] = React.useState(false);
   const [showQRCode, setShowQRCode] = React.useState(false);
   const [qrCodeValue, setQRCodeValue] = React.useState('');
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   React.useEffect(() => {
     setScheme(context.scheme);
@@ -63,17 +66,13 @@ const HomeScreen = ({navigation}) => {
         });
       }
     });
-  }), [messages];
+  }, []); // Removed extra parenthesis and comma here
 
   const toggleQRCode = () => {
     setShowQRCode(!showQRCode);
   };
 
   const QRCodeGenerator = () => {
-    //const qrCodeValue = Databse.getContact();
-
-    //console.log(qrCodeValue)
-
     return showQRCode ? (
       <TouchableWithoutFeedback onPress={() => setShowQRCode(false)}>
         <View style={[styles.qrCodeContainer, { backgroundColor: scheme === 'light' ? 'white' : 'white' }]}>
@@ -98,8 +97,8 @@ const HomeScreen = ({navigation}) => {
         </Menu>
       ),
     });
-  });
-  
+  }, []);
+
   const showAlert = () => {
     Alert.alert(
       'SOS Message',
@@ -110,6 +109,7 @@ const HomeScreen = ({navigation}) => {
           onPress: () => {
             setIsDimmed(false);
             UsbSerial.startSos();
+            sendCoordinates();
           },
         },
         {
@@ -123,7 +123,26 @@ const HomeScreen = ({navigation}) => {
       ],
     );
   };
+
+  const sendCoordinates = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Permission to access location was denied');
+      return;
+    }
+
+    let location = await Location.getCurrentPositionAsync({});
+    setLocation(location);
+    const latitude = JSON.stringify(location.coords.latitude);
+    const longitude = JSON.stringify(location.coords.longitude);
+    const altitude = JSON.stringify(location.coords.altitude);
+    console.log("Please help me, my coordinates are:"+" Latitude "+latitude+" Longitude "+longitude+ " Altitude " + altitude);
+  };
   
+  React.useEffect(() => {
+    sendCoordinates();
+  }, []);
+
   return (
     <TouchableWithoutFeedback onPress={() => setShowQRCode(false)}>
       <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
@@ -142,13 +161,12 @@ const HomeScreen = ({navigation}) => {
       </View>
     </TouchableWithoutFeedback>
   );
-
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: '#f5f5f5',
   },
   menuContainer: {
     position: 'absolute',
