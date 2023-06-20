@@ -41,8 +41,8 @@ const HomeScreen = ({navigation}) => {
   const [scheme, setScheme] = React.useState(context.scheme);
   const [messages, setMessages] = React.useState();
   const [isDimmed, setIsDimmed] = React.useState(false);
-  const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
+  const [location, setLocation] = React.useState(null);
+  const [errorMsg, setErrorMsg] = React.useState(null);
 
   React.useEffect(() => {
     setScheme(context.scheme);
@@ -63,7 +63,7 @@ const HomeScreen = ({navigation}) => {
         });
       }
     });
-  }, []); // Removed extra parenthesis and comma here
+  }), [messages];
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -115,16 +115,12 @@ const HomeScreen = ({navigation}) => {
     }
 
     let location = await Location.getCurrentPositionAsync({});
-    setLocation(location);
     const latitude = JSON.stringify(location.coords.latitude);
     const longitude = JSON.stringify(location.coords.longitude);
     const altitude = JSON.stringify(location.coords.altitude);
-    console.log("Please help me, my coordinates are:"+" Latitude "+latitude+" Longitude "+longitude+ " Altitude " + altitude);
+    const locationText = `Please help me, my coordinates are: Latitude ${latitude} Longitude ${longitude} Altitude ${altitude}`
+    console.log(locationText);
   };
-  
-  React.useEffect(() => {
-    sendCoordinates();
-  }, []);
 
   return (
     <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
