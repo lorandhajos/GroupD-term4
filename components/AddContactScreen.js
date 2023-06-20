@@ -49,16 +49,16 @@ const AddContactScreen = ({navigation}) => {
   };
 
   if (hasPermission === null) {
-    return <Text style={styles.prompt}>Requesting for camera permission</Text>;
+    return <Text style={[styles.prompt, {color: scheme === 'dark' ? 'white' : 'black'}]}>Requesting for camera permission</Text>;
   }
   if (hasPermission === false) {
-    return <Text style={styles.prompt}>No access to camera</Text>;
+    return <Text style={[styles.prompt, {color: scheme === 'dark' ? 'white' : 'black'}]}>No access to camera</Text>;
   }
 
   return (
     <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
-      <Text style={styles.prompt}>Scan QR Code</Text>
-      <Text style={styles.explanation}>To add a new contact you need to scan their QR code.</Text>
+      <Text style={[styles.prompt, {color: scheme === 'dark' ? 'white' : 'black'}]}>Scan QR Code</Text>
+      <Text style={[styles.explanation, {color: scheme === 'dark' ? 'white' : 'black'}]}>To add a new contact you need to scan their QR code.</Text>
       <BarCodeScanner
         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
         style={StyleSheet.absoluteFillObject}

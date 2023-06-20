@@ -5,7 +5,6 @@ import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-m
 import { CommonActions } from '@react-navigation/native';
 import * as Database from './Database';
 import AppContext from './AppContext';
-import QRCode from 'react-native-qrcode-svg';
 
 const { UsbSerial } = NativeModules;
 
@@ -41,8 +40,6 @@ const HomeScreen = ({navigation}) => {
   const [scheme, setScheme] = React.useState(context.scheme);
   const [messages, setMessages] = React.useState();
   const [isDimmed, setIsDimmed] = React.useState(false);
-  const [showQRCode, setShowQRCode] = React.useState(false);
-  const [qrCodeValue, setQRCodeValue] = React.useState('');
 
   React.useEffect(() => {
     setScheme(context.scheme);
@@ -65,25 +62,6 @@ const HomeScreen = ({navigation}) => {
     });
   }), [messages];
 
-  React.useEffect(() => {
-    Database.isInitialized().then((value) => {
-      if (value) {
-        Database.getContact(setQRCodeValue);
-      }
-    });
-  });
-
-  const QRCodeGenerator = () => {
-    const text = JSON.stringify(qrCodeValue[0]);
-    return (showQRCode && qrCodeValue) ? (
-      <TouchableWithoutFeedback onPress={() => setShowQRCode(false)}>
-        <View style={[styles.qrCodeContainer, { backgroundColor: scheme === 'light' ? 'white' : 'white' }]}>
-          <QRCode value={text} size={200} />
-        </View>
-      </TouchableWithoutFeedback>
-    ) : null;
-  };
-
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -94,13 +72,13 @@ const HomeScreen = ({navigation}) => {
           <MenuOptions>
             <MenuOption style={styles.menuOptions} onSelect={() => navigation.navigate('Settings')} text='Settings' />
             <MenuOption style={styles.menuOptions} onSelect={() => navigation.navigate('Add Contact')} text='Add Contact' />
-            <MenuOption style={styles.menuOptions} onSelect={() => setShowQRCode(!showQRCode)} text='QR Code' />
+            <MenuOption style={styles.menuOptions} onSelect={() => navigation.navigate('QR Code')} text='QR Code' />
           </MenuOptions>
         </Menu>
       ),
     });
   });
-  
+
   const showAlert = () => {
     Alert.alert(
       'SOS Message',
@@ -124,7 +102,7 @@ const HomeScreen = ({navigation}) => {
       ],
     );
   };
-  
+
   return (
     <TouchableWithoutFeedback onPress={() => setShowQRCode(false)}>
       <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
@@ -139,11 +117,9 @@ const HomeScreen = ({navigation}) => {
         <Pressable style={styles.sosButton} onPress={showAlert}>
           <Text style={styles.sosText}>SOS</Text>
         </Pressable>
-        {QRCodeGenerator()}
       </View>
     </TouchableWithoutFeedback>
   );
-
 }
 
 const styles = StyleSheet.create({
@@ -222,16 +198,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     backgroundColor: 'white',
     elevation: 5,
-  },
-  qrCodeContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 999,
   },
 });
 

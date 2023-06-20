@@ -84,6 +84,8 @@ export const fillDatabase = () => {
   insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
   insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
   insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+
+  addContactInfo('John Doe', '123', '321');
 }
 
 export const addContactInfo = (name, address, pubKey) => {
