@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, Alert, TouchableWithoutFeedback } from 'react-native';
+import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, Alert } from 'react-native';
 import { Entypo } from '@expo/vector-icons'; 
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import { CommonActions } from '@react-navigation/native';
@@ -104,21 +104,19 @@ const HomeScreen = ({navigation}) => {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={() => setShowQRCode(false)}>
-      <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
-        {messages && (
-          <FlatList
-            data={messages}
-            renderItem={({ item }) => <Item item={item} navigation={navigation} scheme={scheme} />}
-            keyExtractor={item => item.id}
-          />
-        )}
-        {isDimmed && <View style={styles.dimmedOverlay} />}
-        <Pressable style={styles.sosButton} onPress={showAlert}>
-          <Text style={styles.sosText}>SOS</Text>
-        </Pressable>
-      </View>
-    </TouchableWithoutFeedback>
+    <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
+      {messages && (
+        <FlatList
+          data={messages}
+          renderItem={({ item }) => <Item item={item} navigation={navigation} scheme={scheme} />}
+          keyExtractor={item => item.id}
+        />
+      )}
+      {isDimmed && <View style={styles.dimmedOverlay} />}
+      <Pressable style={styles.sosButton} onPress={showAlert}>
+        <Text style={styles.sosText}>SOS</Text>
+      </Pressable>
+    </View>
   );
 }
 
