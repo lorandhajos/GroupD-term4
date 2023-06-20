@@ -41,8 +41,8 @@ const HomeScreen = ({navigation}) => {
   const [scheme, setScheme] = React.useState(context.scheme);
   const [messages, setMessages] = React.useState();
   const [isDimmed, setIsDimmed] = React.useState(false);
-  const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
+  const [location, setLocation] = React.useState(null);
+  const [errorMsg, setErrorMsg] = React.useState(null);
 
   React.useEffect(() => {
     setScheme(context.scheme);
