@@ -238,8 +238,6 @@ void setup() {
   manager.init();//the address cannot be 0
   rf95.setFrequency(RF95_FREQ);
   rf95.setTxPower(20, false);
-  rf95.setCodingRate4(8);
-  rf95.setSpreadingFactor(12);
 }
 
 void loop(){
