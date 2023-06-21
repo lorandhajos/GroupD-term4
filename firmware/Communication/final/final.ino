@@ -386,4 +386,5 @@ void loop(){
     }
   }
   getRadioMessage();
+  sendAllMessagesToPhone();
 }
