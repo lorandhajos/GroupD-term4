@@ -57,6 +57,7 @@ const int maxMessages = 20;
 String g_msgArray[maxMessages];
 
 int g_freeIndexMsg = 0;
+uint8_t g_prevMsgId = 0;
 bool g_msgArrayFull = false;
 
 const uint8_t ClearFlagsMask = 0b00001111;
@@ -188,26 +189,27 @@ bool getRadioMessage() {
         char lastMessage[255];
         uint8_t len = sizeof(lastMessage);
         if (manager.recvfrom(lastMessage, &len)) {
+            uint8_t msgId = manager.headerId();
+            if (msgId == g_prevMsgId) {
+                return false;
+            }
+            g_prevMsgId = msgId;
             uint8_t msgFlags = manager.headerFlags();
             if (hasFlag(msgFlags, IsAckMask)) {
                 //discard the ackhnowledgment messages
                 return false;
             }
             uint8_t sender = manager.headerFrom();
+            if (hasFlag(msgFlags, ReqAckMask)) {
+                delay(100);
+                sendAck(msgId, "0", sender);
+            }
             String convMessage = convertMsg(sender, msgFlags, lastMessage);
             if (checkConnection()) {
                 sendMessageToPhone(convMessage);
-                if (hasFlag(msgFlags, ReqAckMask)) {
-                    delay(100);
-                    sendAck(manager.headerId(), "0", sender);
-                }
                 return true;
             }
             addMessageToArray(convMessage);
-            if (hasFlag(msgFlags, ReqAckMask)) {
-                delay(100);
-                sendAck(manager.headerId(), "0", sender);
-            }
             return true;
         }
     }
