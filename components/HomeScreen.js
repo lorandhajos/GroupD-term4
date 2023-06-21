@@ -41,8 +41,6 @@ const HomeScreen = ({navigation}) => {
   const [scheme, setScheme] = React.useState(context.scheme);
   const [messages, setMessages] = React.useState();
   const [isDimmed, setIsDimmed] = React.useState(false);
-  const [location, setLocation] = React.useState(null);
-  const [errorMsg, setErrorMsg] = React.useState(null);
 
   React.useEffect(() => {
     setScheme(context.scheme);
@@ -64,6 +62,18 @@ const HomeScreen = ({navigation}) => {
       }
     });
   }), [messages];
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const message = UsbSerial.read();
+
+      if (message) {
+        console.log(UsbSerial.read());
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -110,7 +120,7 @@ const HomeScreen = ({navigation}) => {
   const sendCoordinates = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      setErrorMsg('Permission to access location was denied');
+      console.log('Permission to access location was denied');
       return;
     }
 
