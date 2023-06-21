@@ -168,7 +168,6 @@ void sendAllMessagesToPhone() {
         index = maxMessages;
     }
     for (int i=0; i<index; i++) {
-        //Serial.println(i);
         if (g_msgArray[i].length() > 0) {
             sendMessageToPhone(g_msgArray[i]);
             g_msgArray[i] = "";
@@ -268,7 +267,7 @@ void loop(){
         while(id==prevGenId){
           int id = random(1, 255);
         }
-        
+
         prevGenId = id;
 
         int flag = conversion(buffer[4]);
@@ -285,9 +284,7 @@ void loop(){
         payload[Plength-1]=0;
         manager.setHeaderId(id);
         setFlags(flag);
-        Serial.println("Finished constructing payload");
         manager.sendto((uint8_t *)payload, Plength, address);//proggram crashes here after frequency change
-        Serial.println("Snent the message");
 
         manager.waitPacketSent();
         delay(10);
@@ -296,14 +293,11 @@ void loop(){
             rf95.setModeRx();
             delay(1000);
             if(manager.available()){
-              Serial.println("Waiting for message");
               char buf[10];
               if(manager.recvfrom(buf, 10)){
-                Serial.println("Recieved something");
                 int rcvID = manager.headerId();
                 uint8_t rcvFlag = manager.headerFlags();
                 if(rcvID == id || hasFlag(rcvFlag, IsAckMask)){
-                  Serial.println("Recieved conf");
                   break;
                 }
               }
@@ -311,7 +305,6 @@ void loop(){
             else{
               manager.sendto((uint8_t *)payload, Plength, address);
               manager.waitPacketSent();
-              Serial.println("Sent message again");
             }
           }
         }
@@ -326,8 +319,7 @@ void loop(){
         if(address>255){
           address = 254;
         }
-        Serial.println(address);
-        manager.setThisAddress(address);//address maximum 2 charachters
+        manager.setThisAddress(address);
       }
       else if(action == commandSOS && count == 1){
         count++;
@@ -358,14 +350,11 @@ void loop(){
         for(int i=1; i<4; i++){
           tmp.concat(buffer[i]);
         }
-        Serial.println("Recieved frequency");
         int freq = tmp.toInt();
           if(count==2 && freq>430 && freq<999){
             rf95.setFrequency(freq);//Something unpresidented is a bout to happen NEEDS TO BE TESTED!!!!!!!!!!!!!!!!!!!!
             delay(1000);
-            Serial.println(freq);//recreate module here
           }
-          Serial.println("Finished changing frequency");
       }
       else if(action==commandEmpty && count==1){
         Serial.write(1);
