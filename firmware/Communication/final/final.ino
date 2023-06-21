@@ -70,7 +70,7 @@ uint8_t prevGenId = 0;
 
 // Radio driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
-RHDatagram manager(rf95, 12);
+RHDatagram manager(rf95, defAddress);
 
 void restart(){
   digitalWrite(RFM95_RST, LOW);
@@ -237,7 +237,10 @@ void setup() {
   rf95.init();
   manager.init();//the address cannot be 0
   rf95.setFrequency(RF95_FREQ);
-  rf95.setTxPower(23, false);
+  rf95.setTxPower(20, false);
+  rf95.setSpreadingFactor(4096);
+  rf95.setSignalBandwidth(125);
+  rf95.setCodingRate4(0xc4);
 }
 
 void loop(){
