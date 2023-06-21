@@ -41,8 +41,15 @@ function SetupScreen({navigation}) {
   const [address, setAddress] = React.useState('');
   const [addressError, setAddressError] = React.useState('');
 
-function validation(text) {
-  return validateName(text) && validateAddress(number)
+  function validation(text) {
+  if (!validateName(text)) {
+    throw new Error('Invalid name');
+  } else {
+    (!validateAddress(number)); 
+    throw new Error('Invalid address');
+  }
+
+  return true;
 }
   
   const validateName = (text) => {
@@ -120,7 +127,7 @@ function validation(text) {
           {addressError && (
             <Text style={styles.errorAddress}>{addressError}</Text>
           )}
-          <Pressable style={styles.communicationButton} disabled={!name} onPress={handleSubmit} onChangeText={validation}>
+          <Pressable style={styles.communicationButton} disabled={!name} onChangeText={validation} onPress={handleSubmit}>
             <Text style={styles.startCommunication}>Submit</Text>
           </Pressable>
         </ImageBackground>
