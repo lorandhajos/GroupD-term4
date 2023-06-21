@@ -159,7 +159,6 @@ void sendMessageToPhone(String msg) {
     char buf[255];
     msg.toCharArray(buf, 255);
     Serial.write(buf);
-    Serial.write('\n');
 }
 
 void sendAllMessagesToPhone() {
