@@ -40,6 +40,10 @@ function SetupScreen({navigation}) {
   const [nameError, setNameError] = React.useState('');
   const [address, setAddress] = React.useState('');
   const [addressError, setAddressError] = React.useState('');
+
+function validation(text) {
+  return validateName(text) && validateAddress(number)
+}
   
   const validateName = (text) => {
     const regex = /^[A-Za-z0-9_.]+$/;
@@ -58,8 +62,8 @@ function SetupScreen({navigation}) {
       setAddress(number);
       setAddressError('');
     } else {
-      setAddress(number)
-      setAddressError('It is only possible to enter three numbers.')
+      setAddress(number);
+      setAddressError('It is only possible to enter three numbers.');
     }
   }
 
@@ -75,7 +79,7 @@ function SetupScreen({navigation}) {
         }
       } else {
         console.log('Private key found');
-        // FinishSetup(navigation, name);
+        FinishSetup(navigation, name);
       }
     });
   }, []);
@@ -116,7 +120,7 @@ function SetupScreen({navigation}) {
           {addressError && (
             <Text style={styles.errorAddress}>{addressError}</Text>
           )}
-          <Pressable style={styles.communicationButton} disabled={!name} onPress={handleSubmit}>
+          <Pressable style={styles.communicationButton} disabled={!name} onPress={handleSubmit} onChangeText={validation}>
             <Text style={styles.startCommunication}>Submit</Text>
           </Pressable>
         </ImageBackground>
