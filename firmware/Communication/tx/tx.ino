@@ -117,6 +117,7 @@ void loop(){
         manager.setHeaderId(id);
         setFlags(flag);
         Serial.println("Finished constructing payload");
+        Serial.println(payload);
         manager.sendto((uint8_t *)payload, Plength, address);//proggram crashes here after frequency change
         Serial.println("Snent the message");
 

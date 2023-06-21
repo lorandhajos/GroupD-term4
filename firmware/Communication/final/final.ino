@@ -66,6 +66,8 @@ const uint8_t IsAckMask      = 0b00000010;
 const uint8_t IsKeyMask      = 0b00000100;
 const uint8_t IsSOSMask      = 0b00001000;
 
+uint8_t prevGenId = 0;
+
 // Radio driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 RHDatagram manager(rf95, 12);
@@ -263,6 +265,12 @@ void loop(){
 
         int id = random(1, 255);
 
+        while(id==prevGenId){
+          int id = random(1, 255);
+        }
+        
+        prevGenId = id;
+
         int flag = conversion(buffer[4]);
 
         char loadRead[250];
@@ -293,7 +301,8 @@ void loop(){
               if(manager.recvfrom(buf, 10)){
                 Serial.println("Recieved something");
                 int rcvID = manager.headerId();
-                if(rcvID == id){
+                uint8_t rcvFlag = manager.headerFlags();
+                if(rcvID == id || hasFlag(rcvFlag, IsAckMask)){
                   Serial.println("Recieved conf");
                   break;
                 }
