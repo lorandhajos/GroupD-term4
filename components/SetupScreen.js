@@ -6,7 +6,7 @@ import * as Databse from './Database';
 import * as SecureStore from 'expo-secure-store';
 import * as eccrypto from 'eccrypto';
 
-const FinishSetup = (navigation, name) => {
+const FinishSetup = (navigation, name, address) => {
   try {
     AsyncStorage.getItem('name').then((value) => {
       if (value == null) {
@@ -17,7 +17,22 @@ const FinishSetup = (navigation, name) => {
     console.error(error);
   }
   
+  const privKey = eccrypto.generatePrivate();
+
+  try {
+    SecureStore.getItemAsync('privKey').then((value) => {
+      if (value == null) {
+        console.log('No private key found, generating new one');
+        SecureStore.setItemAsync('privKey', privKey.toString('hex'));
+      }
+    });
+  } catch (error) {
+    console.error(error);
+  }
+
   Databse.initDatabase();
+
+  Databse.addContactInfo(name, address, eccrypto.getPublic(privKey).toString('hex'));
 
   try {
     AsyncStorage.setItem('isInitialized', "1")
@@ -40,21 +55,10 @@ function SetupScreen({navigation}) {
   const [nameError, setNameError] = React.useState('');
   const [address, setAddress] = React.useState('');
   const [addressError, setAddressError] = React.useState('');
-
-  function validation(text) {
-  if (!validateName(text)) {
-    throw new Error('Invalid name');
-  } else {
-    (!validateAddress(number)); 
-    throw new Error('Invalid address');
-  }
-
-  return true;
-}
   
   const validateName = (text) => {
     const regex = /^[A-Za-z0-9_.]+$/;
-    if (regex.test(text)) {
+    if (regex.test(text) || text.length == 0) {
       setName(text);
       setNameError('');
     } else {
@@ -65,41 +69,26 @@ function SetupScreen({navigation}) {
 
   const validateAddress = (number) => {
     const regex = /^[0-9]/;
-    if (regex.test(number)){
+    if (regex.test(number) || number.length == 0){
       setAddress(number);
       setAddressError('');
+      console.log("Setting address " + number)
     } else {
       setAddress(number);
       setAddressError('It is only possible to enter three numbers.');
     }
   }
 
-  React.useEffect(() => {
-    SecureStore.getItemAsync('privKey').then((value) => {
-      if (value == null) {
-        console.log('No private key found, generating new one');
-        try {
-          const privKey = eccrypto.generatePrivate();
-          SecureStore.setItemAsync('privKey', privKey.toString('hex'));
-        } catch (error) {
-          console.error(error);
-        }
-      } else {
-        console.log('Private key found');
-        FinishSetup(navigation, name);
-      }
-    });
-  }, []);
-
   const image = require('../assets/setupImage.png');
 
   const handleSubmit = () => {
-    const regex = /^[A-Za-z0-9_.]+$/;
-    if (regex.test(name)) {
-      setNameError('');
-      FinishSetup(navigation, name);
-    } else {
-      setNameError('Only letters, numbers, underscore (_) and dot (.) are allowed.');
+    if (addressError == '' && nameError == '') {
+      if (address >= 0 && address <= 255) {
+        setAddressError('');
+        FinishSetup(navigation, name, address);
+      } else {
+        setAddressError('Address must be between 0 and 255.');
+      }
     }
   };
 
@@ -110,7 +99,7 @@ function SetupScreen({navigation}) {
           <Text style={styles.chooseUsername}>Choose Username</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter Username"
+            placeholder="Username"
             onChangeText={validateName}
             value={name}
           />
@@ -120,14 +109,14 @@ function SetupScreen({navigation}) {
           <TextInput
             maxLength={3}
             style={styles.addressInput}
-            placeholder="Enter Address"
+            placeholder="Address"
             onChangeText={validateAddress}
             value={address}
           />
           {addressError && (
             <Text style={styles.errorAddress}>{addressError}</Text>
           )}
-          <Pressable style={styles.communicationButton} disabled={!name} onChangeText={validation} onPress={handleSubmit}>
+          <Pressable style={styles.communicationButton} disabled={!name} onPress={handleSubmit}>
             <Text style={styles.startCommunication}>Submit</Text>
           </Pressable>
         </ImageBackground>
@@ -170,7 +159,7 @@ const styles = StyleSheet.create({
     width: '80%',
     height: 40,
     color: 'black',
-    marginVertical: '10%',
+    marginVertical: 15,
     marginLeft: '10%',
   },
   startCommunication:{
@@ -202,8 +191,7 @@ const styles = StyleSheet.create({
   errorAddress: {
     color: 'red',
     marginLeft: '10%',
-    marginTop: 10,
-    marginBottom: 15,
+    marginBottom: 10,
   }
 });
 
