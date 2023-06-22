@@ -91,7 +91,12 @@ const HomeScreen = ({navigation}) => {
           const text = message.substring(4);
 
           console.log(message);
-          Database.insertMessage(address, text, Date.now());
+
+          Database.getContactIdByAddress(address).then((id) => {
+            if (id) {
+              Database.insertMessage(id, text, Date.now());
+            }
+          });
         }
       }
     }, 3000);
@@ -156,7 +161,7 @@ const HomeScreen = ({navigation}) => {
     console.log(locationText);
 
     if (UsbSerial.isDeviceConnected()) {
-      // todo send location
+      //UsbSerial.sendMessage(locationText, 255, 1);
     }
   };
 

@@ -128,6 +128,24 @@ export const getAddress = async () => {
   });
 };
 
+export const getContactIdByAddress = async (address) => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT id FROM contacts WHERE address = ?',
+        [address],
+        (_, { rows }) => {
+          resolve(rows._array[0].id);
+        },
+        (_, error) => {
+          console.error('Error getting id from contacts:', error);
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
 export const insertContact = (name, address) => {
   db.transaction(tx => {
     tx.executeSql(
