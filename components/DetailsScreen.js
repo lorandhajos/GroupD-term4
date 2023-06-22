@@ -151,6 +151,12 @@ function DetailsScreen({route, navigation}) {
 
   const Item = ({ item }) => (
     <>
+      {item.type == 2 && (
+        <View style={[styles.messageBox, styles.messageBoxAdded]}>
+          <Text style={[styles.message, styles.messageAdded]}>{item.message}</Text>
+          <Text style={[styles.time, styles.messageAdded]}>{formatTime(item.time)}</Text>
+        </View>
+      )}
       {item.type == 1 && (
         <View style={[styles.messageBox, styles.messageBoxSent]}>
           <Text style={[styles.message, styles.messageSent]}>{item.message}</Text>
@@ -328,6 +334,12 @@ const styles = StyleSheet.create({
   },
   menuOptions: {
     padding: 12,
+  },
+  messageBoxAdded: {
+    backgroundColor: '#e6e6e6',
+  },
+  messageAdded: {
+    color: '#000000',
   },
 });
 

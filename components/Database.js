@@ -101,7 +101,7 @@ export const addContact = (name, address, pubKey) => {
       [name, address, pubKey],
       (_, results) => {
         console.log('Contact added successfully!');
-        insertMessage(results.insertId, 'You have added a new contact! Say hello!', Date.now());
+        insertMessage(results.insertId, 'You have added a new contact! Say hello!', Date.now(), 2);
       }
     );
   },

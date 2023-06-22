@@ -72,7 +72,6 @@ function SetupScreen({navigation}) {
     if (regex.test(number) || number.length == 0){
       setAddress(number);
       setAddressError('');
-      console.log("Setting address " + number)
     } else {
       setAddress(number);
       setAddressError('It is only possible to enter three numbers.');

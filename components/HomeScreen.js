@@ -162,12 +162,15 @@ const HomeScreen = ({navigation}) => {
 
   return (
     <View style={[styles.container, { backgroundColor: scheme === 'dark' ? '#313131' : '#f5f5f5' }]}>
-      {messages && (
+      {messages && messages.length != 0 && (
         <FlatList
           data={messages}
           renderItem={({ item }) => <Item item={item} navigation={navigation} scheme={scheme} />}
           keyExtractor={item => item.id}
         />
+      )}
+      {!messages || messages.length == 0 && (
+        <Text style={[styles.noMessagesText, { color: scheme === 'dark' ? 'white' : 'black' }]}>No contacts yet</Text>
       )}
       {isDimmed && <View style={styles.dimmedOverlay} />}
       <Pressable style={styles.sosButton} onPress={showAlert}>
@@ -253,6 +256,11 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     backgroundColor: 'white',
     elevation: 5,
+  },
+  noMessagesText: {
+    textAlign: 'center',
+    marginTop: 16,
+    fontSize: 18,
   },
 });
 
