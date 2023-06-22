@@ -73,7 +73,6 @@ function DetailsScreen({route, navigation}) {
   };
 
   const sendMessages = (text) => {
-    console.log('address', route.params.address);
     UsbSerial.sendMessage(text, route.params.address, 1);
     setMessages([...messages, { id: messageSize + 1, message: text, time: Date.now() }]);
     Databse.insertMessage(route.params.id, text, Date.now(), 1);
@@ -154,7 +153,6 @@ function DetailsScreen({route, navigation}) {
       {item.type == 2 && (
         <View style={[styles.messageBox, styles.messageBoxAdded]}>
           <Text style={[styles.message, styles.messageAdded]}>{item.message}</Text>
-          <Text style={[styles.time, styles.messageAdded]}>{formatTime(item.time)}</Text>
         </View>
       )}
       {item.type == 1 && (
