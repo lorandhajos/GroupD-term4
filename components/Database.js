@@ -40,8 +40,7 @@ function createTables() {
 export const initDatabase = () => {
   if (firstRun) {
     createTables();
-    // TODO: Remove this before release
-    fillDatabase();
+    //fillDatabase();
   }
 }
 
@@ -58,10 +57,10 @@ export const isInitialized = async () => {
 }
 
 export const fillDatabase = () => {
-  insertContact('John Doe');
-  insertContact('Jane Smith');
-  insertContact('Bob Johnson');
-  insertContact('Alice Williams');
+  insertContact('John Doe', 1);
+  insertContact('Jane Smith', 2);
+  insertContact('Bob Johnson', 3);
+  insertContact('Alice Williams', 4);
 
   insertMessage(1, 'Hello!', Date.now());
   insertMessage(2, 'This is a really long test message testing testing\ntesting test test test', Date.now());
@@ -111,11 +110,29 @@ export const addContact = (name, address, pubKey) => {
   });
 }
 
-export const insertContact = (name) => {
+export const getAddress = async () => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT address FROM contact',
+        [],
+        (_, { rows }) => {
+          resolve(rows._array[0].address);
+        },
+        (_, error) => {
+          console.error('Error getting contacts:', error);
+          reject(error);
+        }
+      );
+    });
+  });
+};
+
+export const insertContact = (name, address) => {
   db.transaction(tx => {
     tx.executeSql(
-      'INSERT INTO contacts (name) VALUES (?)',
-      [name]
+      'INSERT INTO contacts (name, address) VALUES (?, ?)',
+      [name, address]
     );
   });
 }
@@ -194,7 +211,7 @@ export const getLastMessage = (contactId, setLastMessageFunc) => {
 export const getHomeScreenData = (setHomeScreenData) => {
   db.transaction(tx => {
     tx.executeSql(
-      'SELECT contacts.id, name, message, time FROM contacts JOIN messages ON messages.contactId = contacts.id WHERE messages.id = (SELECT MAX(id) FROM messages WHERE contactId = contacts.id)',
+      'SELECT contacts.id, name, message, time, address FROM contacts JOIN messages ON messages.contactId = contacts.id WHERE messages.id = (SELECT MAX(id) FROM messages WHERE contactId = contacts.id)',
       [],
       (_, { rows }) => {
         setHomeScreenData(rows._array);

@@ -114,12 +114,6 @@ public class UsbSerial extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
-  public void sendMessage(String str, int addr) {
-    String address = String.format("%03d", addr);
-    write(1 + address + 0 + str);
-  }
-
-  @ReactMethod(isBlockingSynchronousMethod = true)
   public void startSos() {
     setOption(3, 1);
   }

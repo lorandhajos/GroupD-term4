@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, Alert } from 'react-native';
+import { StyleSheet, Text, View, NativeModules, FlatList, Pressable, Alert, ToastAndroid } from 'react-native';
 import { Entypo } from '@expo/vector-icons'; 
 import { Menu, MenuTrigger, MenuOptions, MenuOption } from 'react-native-popup-menu';
 import { CommonActions } from '@react-navigation/native';
@@ -28,7 +28,7 @@ function formatTime(time) {
 
 const Item = ({item, navigation, scheme}) => (
   <View style={styles.item}>
-    <Pressable style={styles.contact} onPress={() => navigation.navigate('Details', {id: item.id, name: item.name})}>
+    <Pressable style={styles.contact} onPress={() => navigation.navigate('Details', {id: item.id, name: item.name, address: item.address})}>
       <Text style={[styles.name, {color: scheme === 'dark' ? 'white' : 'black'}]}>{item.name}</Text>
       <Text style={[styles.time, {color: scheme === 'dark' ? 'white' : 'black'}]}>{formatTime(item.time)}</Text>
       <Text style={[styles.message, {color: scheme === 'dark'  ?'white' : 'black'}]} numberOfLines={2}>{item.message}</Text>
@@ -64,13 +64,37 @@ const HomeScreen = ({navigation}) => {
   }), [messages];
 
   React.useEffect(() => {
+    UsbSerial.openDevice();
+
+    if (Database.isInitialized()) {
+      if (UsbSerial.isDeviceConnected()) {
+        Database.getAddress().then((address) => {
+          console.log("Setting address: " + address);
+          UsbSerial.setAddress(address);
+        });
+
+        ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
+      } else {
+        ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
+      }
+    }
+  }, []);
+
+  React.useEffect(() => {
     const interval = setInterval(() => {
       const message = UsbSerial.read();
 
-      if (message) {
-        console.log(UsbSerial.read());
+      if (Database.isInitialized()) {
+        if (message) {
+          const address = parseInt(message.substring(0, 3), 10);
+          const flag = message.substring(3, 4);
+          const text = message.substring(4);
+
+          console.log(message);
+          Database.insertMessage(address, text, Date.now());
+        }
       }
-    }, 5000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
@@ -130,6 +154,10 @@ const HomeScreen = ({navigation}) => {
     const altitude = JSON.stringify(location.coords.altitude);
     const locationText = `Please help me, my coordinates are: Latitude ${latitude} Longitude ${longitude} Altitude ${altitude}`
     console.log(locationText);
+
+    if (UsbSerial.isDeviceConnected()) {
+      // todo send location
+    }
   };
 
   return (

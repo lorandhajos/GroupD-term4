@@ -53,14 +53,6 @@ function DetailsScreen({route, navigation}) {
   }, [context.scheme]);
 
   React.useEffect(() => {
-    UsbSerial.openDevice();
-
-    if (UsbSerial.isDeviceConnected()) {
-      ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
-    } else {
-      ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
-    }
-
     Voice.onSpeechEnd = speechEndHandler;
     Voice.onSpeechResults = speechResultsHandler;
     return () => {
@@ -81,7 +73,8 @@ function DetailsScreen({route, navigation}) {
   };
 
   const sendMessages = (text) => {
-    UsbSerial.sendMessage(text, 12, 1);
+    console.log('address', route.params.address);
+    UsbSerial.sendMessage(text, route.params.address, 1);
     setMessages([...messages, { id: messageSize + 1, message: text, time: Date.now() }]);
     Databse.insertMessage(route.params.id, text, Date.now(), 1);
     this.textInput.clear();
