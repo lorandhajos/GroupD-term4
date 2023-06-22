@@ -104,7 +104,7 @@ const HomeScreen = ({navigation}) => {
     return () => clearInterval(interval);
   }, []);
 
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <Menu>
@@ -119,7 +119,7 @@ const HomeScreen = ({navigation}) => {
         </Menu>
       ),
     });
-  });
+  }), [];
 
   const showAlert = () => {
     Alert.alert(

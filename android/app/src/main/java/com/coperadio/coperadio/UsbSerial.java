@@ -21,8 +21,8 @@ import android.app.Activity;
 
 public class UsbSerial extends ReactContextBaseJavaModule {
   private static final String ACTION_USB_PERMISSION = BuildConfig.APPLICATION_ID + ".GRANT_USB";
-  private static final int WRITE_WAIT_MILLIS = 2000;
-  private static final int READ_WAIT_MILLIS = 2000;
+  private static final int WRITE_WAIT_MILLIS = 200;
+  private static final int READ_WAIT_MILLIS = 200;
 
   private UsbSerialPort port = null;
 
