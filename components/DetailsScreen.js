@@ -73,6 +73,7 @@ function DetailsScreen({route, navigation}) {
   };
 
   const sendMessages = (text) => {
+    console.log('Sent message to ' + route.params.address + " text: " + text);
     UsbSerial.sendMessage(text, route.params.address, 1);
     setMessages([...messages, { id: messageSize + 1, message: text, time: Date.now() }]);
     Databse.insertMessage(route.params.id, text, Date.now(), 1);
