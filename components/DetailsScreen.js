@@ -337,6 +337,7 @@ const styles = StyleSheet.create({
   },
   messageBoxAdded: {
     backgroundColor: '#e6e6e6',
+    alignSelf: 'center',
   },
   messageAdded: {
     color: '#000000',
