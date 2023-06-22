@@ -66,18 +66,20 @@ const HomeScreen = ({navigation}) => {
   React.useEffect(() => {
     UsbSerial.openDevice();
 
-    if (Database.isInitialized()) {
-      if (UsbSerial.isDeviceConnected()) {
-        Database.getAddress().then((address) => {
-          console.log("Setting address: " + address);
-          UsbSerial.setAddress(address);
-        });
+    Database.isInitialized().then((value) => {
+      if (value) {
+        if (UsbSerial.isDeviceConnected()) {
+          Database.getAddress().then((address) => {
+            console.log("Setting address: " + address);
+            UsbSerial.setAddress(address);
+          });
 
-        ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
-      } else {
-        ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
+          ToastAndroid.show('Radio Module connected!', ToastAndroid.SHORT);
+        } else {
+          ToastAndroid.show('Radio Module not connected!', ToastAndroid.SHORT);
+        }
       }
-    }
+    });
   }, []);
 
   React.useEffect(() => {
