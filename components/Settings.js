@@ -1,8 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image, Pressable } from 'react-native';
+import { StyleSheet, Text, View, Image, Pressable, NativeModules } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppContext from './AppContext';
+
+const { UsbSerial } = NativeModules;
 
 const getSelectedRegion = async () => {
   try {
@@ -19,6 +21,15 @@ const getSelectedRegion = async () => {
 const storeSelectedRegion = async (value) => {
   try {
     await AsyncStorage.setItem('selectedRegion', value);
+    if (UsbSerial.isDeviceConnected()) {
+      if (value === "EU") {
+        UsbSerial.setFrequency(868);
+      } else if (value === "AS") {
+        UsbSerial.setFrequency(433);
+      } else if (value === "AM") {
+        UsbSerial.setFrequency(915);
+      }
+    }
   } catch (error) {
     console.log('Error storing selected region:', error);
   }
@@ -81,10 +92,6 @@ const Settings = () => {
           </Picker>
         </View>
       )}
-      <Pressable style={[styles.row, {backgroundColor: scheme === 'dark' ? '#7a7a7a' : '#ffffff'}]}>
-        <Image style={styles.image} source={require('../assets/notification.png')} />
-        <Text style={[styles.naming, {color: scheme === 'dark' ? '#ffffff' : '#000000'}]}>Notifications</Text>
-      </Pressable>
     </View>
   );
 };
