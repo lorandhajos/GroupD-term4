@@ -40,7 +40,6 @@ function createTables() {
 export const initDatabase = () => {
   if (firstRun) {
     createTables();
-    //fillDatabase();
   }
 }
 
@@ -50,39 +49,10 @@ export const isInitialized = async () => {
     if(value !== null) {
       return true;
     }
-    return false;
   } catch(e) {
     return false;
   }
-}
-
-export const fillDatabase = () => {
-  insertContact('John Doe', 1);
-  insertContact('Jane Smith', 2);
-  insertContact('Bob Johnson', 3);
-  insertContact('Alice Williams', 4);
-
-  insertMessage(1, 'Hello!', Date.now());
-  insertMessage(2, 'This is a really long test message testing testing\ntesting test test test', Date.now());
-  insertMessage(3, 'Testing', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
-  insertMessage(4, 'Lorem ipsum dolor sit amet', Date.now());
+  return false;
 }
 
 export const addContactInfo = (name, address, pubKey) => {
@@ -146,15 +116,6 @@ export const getContactIdByAddress = async (address) => {
   });
 };
 
-export const insertContact = (name, address) => {
-  db.transaction(tx => {
-    tx.executeSql(
-      'INSERT INTO contacts (name, address) VALUES (?, ?)',
-      [name, address]
-    );
-  });
-}
-
 export const insertMessage = (contactId, message, time, type = 0) => {
   db.transaction(tx => {
     tx.executeSql(
@@ -163,21 +124,6 @@ export const insertMessage = (contactId, message, time, type = 0) => {
     );
   }, (error) => {
     console.error('Error inserting message:', error);
-  });
-}
-
-export const getContacts = async (setContactsFunc) => {
-  db.transaction(tx => {
-    tx.executeSql(
-      'SELECT * FROM contacts',
-      [],
-      (_, { rows }) => {
-        setContactsFunc(rows._array);
-      },
-      (_, error) => {
-        console.error('Error getting contacts:', error);
-      }
-    );
   });
 }
 
@@ -196,6 +142,24 @@ export const getContact = (setContactFunc) => {
   });
 }
 
+export const getKeyFromContact = async (contactId) => {
+  return new Promise((resolve, reject) => {
+    db.transaction(tx => {
+      tx.executeSql(
+        'SELECT pubKey FROM contacts WHERE id = ?',
+        [contactId],
+        (_, { rows }) => {
+          resolve(rows._array[0].pubKey);
+        },
+        (_, error) => {
+          console.error('Error getting key from contact:', error);
+          reject(error);
+        }
+      );
+    });
+  });
+}
+
 export const getMessages = (contactId, setMessagesFunc) => {
   db.transaction(tx => {
     tx.executeSql(
@@ -211,25 +175,10 @@ export const getMessages = (contactId, setMessagesFunc) => {
   });
 }
 
-export const getLastMessage = (contactId, setLastMessageFunc) => {
-  db.transaction(tx => {
-    tx.executeSql(
-      'SELECT * FROM messages WHERE contactId = ? ORDER BY id DESC LIMIT 1',
-      [contactId],
-      (_, { rows }) => {
-        setLastMessageFunc(rows._array[0]);
-      },
-      (_, error) => {
-        console.error('Error getting last message:', error);
-      }
-    );
-  });
-}
-
 export const getHomeScreenData = (setHomeScreenData) => {
   db.transaction(tx => {
     tx.executeSql(
-      'SELECT contacts.id, name, message, time, address FROM contacts JOIN messages ON messages.contactId = contacts.id WHERE messages.id = (SELECT MAX(id) FROM messages WHERE contactId = contacts.id)',
+      'SELECT contacts.id, name, message, time, address, pubKey FROM contacts JOIN messages ON messages.contactId = contacts.id WHERE messages.id = (SELECT MAX(id) FROM messages WHERE contactId = contacts.id)',
       [],
       (_, { rows }) => {
         setHomeScreenData(rows._array);
