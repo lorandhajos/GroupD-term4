@@ -12,6 +12,33 @@ import CryptoES from 'crypto-es';
 
 const { UsbSerial } = NativeModules;
 
+const JsonFormatter = { 
+  stringify: function (cipherParams) { // create json object with ciphertext
+    const jsonObj = { ct: cipherParams.ciphertext.toString(CryptoES.enc.Base64) }; // optionally add iv and salt
+    if (cipherParams.iv) {
+      jsonObj.iv = cipherParams.iv.toString();
+    }
+    if (cipherParams.salt) {
+      jsonObj.s = cipherParams.salt.toString();
+    }
+    // stringify json object
+    return JSON.stringify(jsonObj);
+  },
+  parse: function (jsonStr) { // parse json string
+    const jsonObj = JSON.parse(jsonStr); // extract ciphertext from json object, and create cipher params object
+    const cipherParams = CryptoES.lib.CipherParams.create(
+      { ciphertext: CryptoES.enc.Base64.parse(jsonObj.ct) },
+    ); // optionally extract iv and salt
+    if (jsonObj.iv) {
+      cipherParams.iv = CryptoES.enc.Hex.parse(jsonObj.iv)
+    }
+    if (jsonObj.s) {
+      cipherParams.salt = CryptoES.enc.Hex.parse(jsonObj.s)
+    }
+    return cipherParams;
+  },
+};
+
 function formatTime(time) {
   const date = new Date(time);
   const hours = date.getHours();
@@ -77,7 +104,7 @@ function DetailsScreen({route, navigation}) {
     if (text.length > 0) {
       console.log('Sent message to ' + route.params.address + " text: " + text);
 
-      const encrypted = CryptoES.AES.encrypt(text, route.params.pubKey).toString();
+      const encrypted = CryptoES.AES.encrypt(text, route.params.pubKey, { format: JsonFormatter }).toString();
       console.log('encryptedText', encrypted);
 
       UsbSerial.sendMessage(encrypted, route.params.address, 1);

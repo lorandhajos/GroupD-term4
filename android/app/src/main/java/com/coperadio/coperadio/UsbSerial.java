@@ -114,8 +114,8 @@ public class UsbSerial extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
-  public void startSos() {
-    setOption(3, 1);
+  public void startSos(String str) {
+    write("" + 31 + str);
   }
 
   @ReactMethod(isBlockingSynchronousMethod = true)
