@@ -6,7 +6,7 @@ import * as Databse from './Database';
 import * as SecureStore from 'expo-secure-store';
 import { RSA } from 'react-native-rsa-native';
 
-const FinishSetup = (navigation, name, address) => {
+const finishSetup = (navigation, name, address) => {
   try {
     AsyncStorage.getItem('name').then((value) => {
       if (value == null) {
@@ -68,7 +68,6 @@ function SetupScreen({ navigation }) {
       setNameError('Only letters, underscores (_), emojis and full stops (.) are allowed.');
     }
   };
-  
 
   const validateAddress = (number) => {
     const regex = /^[0-9]/;
@@ -87,7 +86,7 @@ function SetupScreen({ navigation }) {
     if (addressError === '' && nameError === '') {
       if (address >= 0 && address <= 255) {
         setAddressError('');
-        FinishSetup(navigation, name, address);
+        finishSetup(navigation, name, address);
       } else {
         setAddressError('Address must be between 0 and 255.');
       }
