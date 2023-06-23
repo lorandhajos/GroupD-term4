@@ -6,36 +6,9 @@ import { CommonActions } from '@react-navigation/native';
 import * as Database from './Database';
 import AppContext from './AppContext';
 import * as Location from 'expo-location';
-import CryptoES from 'crypto-es';
+import { RSA } from 'react-native-rsa-native';
 
 const { UsbSerial } = NativeModules;
-
-const JsonFormatter = { 
-  stringify: function (cipherParams) { // create json object with ciphertext
-    const jsonObj = { ct: cipherParams.ciphertext.toString(CryptoES.enc.Base64) }; // optionally add iv and salt
-    if (cipherParams.iv) {
-      jsonObj.iv = cipherParams.iv.toString();
-    }
-    if (cipherParams.salt) {
-      jsonObj.s = cipherParams.salt.toString();
-    }
-    // stringify json object
-    return JSON.stringify(jsonObj);
-  },
-  parse: function (jsonStr) { // parse json string
-    const jsonObj = JSON.parse(jsonStr); // extract ciphertext from json object, and create cipher params object
-    const cipherParams = CryptoES.lib.CipherParams.create(
-      { ciphertext: CryptoES.enc.Base64.parse(jsonObj.ct) },
-    ); // optionally extract iv and salt
-    if (jsonObj.iv) {
-      cipherParams.iv = CryptoES.enc.Hex.parse(jsonObj.iv)
-    }
-    if (jsonObj.s) {
-      cipherParams.salt = CryptoES.enc.Hex.parse(jsonObj.s)
-    }
-    return cipherParams;
-  },
-};
 
 function formatTime(time) {
   const date = new Date(time);
@@ -126,11 +99,13 @@ const HomeScreen = ({navigation}) => {
             if (id) {
               Database.getKeyFromContact(id).then((pubKey) => {
                 if (pubKey) {
-                  const decryptedText = CryptoES.AES.decrypt(text, pubKey, { format: JsonFormatter }).toString(CryptoES.enc.Utf8);
+                  RSA.decrypt(encodedMessage, keys.private).then(decryptedText => {
+                    console.log(decryptedText);
 
-                  console.log(decryptedText);
-
-                  Database.insertMessage(id, decryptedText, Date.now());
+                    if (decryptedText.length > 0) {
+                      Database.insertMessage(id, decryptedText, Date.now());
+                    }
+                  });
                 }
               });
             }
@@ -168,7 +143,6 @@ const HomeScreen = ({navigation}) => {
           text: 'Yes',
           onPress: () => {
             setIsDimmed(false);
-            UsbSerial.startSos();
             sendCoordinates();
           },
         },

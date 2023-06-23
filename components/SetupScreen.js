@@ -4,7 +4,7 @@ import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Databse from './Database';
 import * as SecureStore from 'expo-secure-store';
-import * as eccrypto from 'eccrypto';
+import { RSA } from 'react-native-rsa-native';
 
 const FinishSetup = (navigation, name, address) => {
   try {
@@ -17,22 +17,24 @@ const FinishSetup = (navigation, name, address) => {
     console.error(error);
   }
   
-  const privKey = eccrypto.generatePrivate();
+  RSA.generateKeys(1024).then(keys => {
+    const privKey = keys.private;
 
-  try {
-    SecureStore.getItemAsync('privKey').then((value) => {
-      if (value == null) {
-        console.log('No private key found, generating new one');
-        SecureStore.setItemAsync('privKey', privKey.toString('hex'));
-      }
-    });
-  } catch (error) {
-    console.error(error);
-  }
-
-  Databse.initDatabase();
-
-  Databse.addContactInfo(name, address, privKey.toString('hex'));
+    try {
+      SecureStore.getItemAsync('privKey').then((value) => {
+        if (value == null) {
+          console.log('No private key found, generating new one');
+          SecureStore.setItemAsync('privKey', privKey);
+        }
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  
+    Databse.initDatabase();
+  
+    Databse.addContactInfo(name, address, keys.public);
+  });
 
   try {
     AsyncStorage.setItem('isInitialized', "1")
