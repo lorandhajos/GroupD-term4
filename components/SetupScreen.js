@@ -50,26 +50,27 @@ const FinishSetup = (navigation, name, address) => {
   });
 }
 
-function SetupScreen({navigation}) {
+function SetupScreen({ navigation }) {
   const [name, setName] = React.useState('');
   const [nameError, setNameError] = React.useState('');
   const [address, setAddress] = React.useState('');
   const [addressError, setAddressError] = React.useState('');
-  
+
   const validateName = (text) => {
-    const regex = /^[A-Za-z0-9_.]+$/;
-    if (regex.test(text) || text.length == 0) {
+    const regex = /^[a-zA-Z0-9_.\u{1F000}-\u{1FFFF}]+$/u;
+    if (regex.test(text) || text.length === 0) {
       setName(text);
       setNameError('');
     } else {
       setName(text);
-      setNameError('Only letters, numbers, underscore (_) and dot (.) are allowed.');
+      setNameError('Only letters, underscores (_), emojis and full stops (.) are allowed.');
     }
   };
+  
 
   const validateAddress = (number) => {
     const regex = /^[0-9]/;
-    if (regex.test(number) || number.length == 0){
+    if (regex.test(number) || number.length === 0){
       setAddress(number);
       setAddressError('');
     } else {
@@ -81,7 +82,7 @@ function SetupScreen({navigation}) {
   const image = require('../assets/setupImage.png');
 
   const handleSubmit = () => {
-    if (addressError == '' && nameError == '') {
+    if (addressError === '' && nameError === '') {
       if (address >= 0 && address <= 255) {
         setAddressError('');
         FinishSetup(navigation, name, address);
