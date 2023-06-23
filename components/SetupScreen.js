@@ -32,7 +32,7 @@ const FinishSetup = (navigation, name, address) => {
 
   Databse.initDatabase();
 
-  Databse.addContactInfo(name, address, eccrypto.getPublic(privKey).toString('hex'));
+  Databse.addContactInfo(name, address, privKey.toString('hex'));
 
   try {
     AsyncStorage.setItem('isInitialized', "1")
