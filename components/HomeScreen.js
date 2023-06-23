@@ -7,6 +7,7 @@ import * as Database from './Database';
 import AppContext from './AppContext';
 import * as Location from 'expo-location';
 import { RSA } from 'react-native-rsa-native';
+import * as SecureStore from 'expo-secure-store';
 
 const { UsbSerial } = NativeModules;
 
@@ -97,16 +98,14 @@ const HomeScreen = ({navigation}) => {
 
           Database.getContactIdByAddress(address).then((id) => {
             if (id) {
-              Database.getKeyFromContact(id).then((pubKey) => {
-                if (pubKey) {
-                  RSA.decrypt(encodedMessage, keys.private).then(decryptedText => {
-                    console.log(decryptedText);
+              SecureStore.getItemAsync('privKey').then((privKey) => {
+                RSA.decrypt(encodedMessage, privKey).then(decryptedText => {
+                  console.log(decryptedText);
 
-                    if (decryptedText.length > 0) {
-                      Database.insertMessage(id, decryptedText, Date.now());
-                    }
-                  });
-                }
+                  if (decryptedText.length > 0) {
+                    Database.insertMessage(id, decryptedText, Date.now());
+                  }
+                });
               });
             }
           });

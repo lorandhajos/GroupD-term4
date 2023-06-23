@@ -77,7 +77,7 @@ function DetailsScreen({route, navigation}) {
     if (text.length > 0) {
       console.log('Sent message to ' + route.params.address + " text: " + text);
 
-      RSA.encrypt(text, keys.public).then(encrypted => {
+      RSA.encrypt(text, route.params.pubKey).then(encrypted => {
         console.log('encryptedText', encrypted);
         UsbSerial.sendMessage(encrypted, route.params.address, 1);
         setMessages([...messages, { id: messageSize + 1, message: text, time: Date.now() }]);
