@@ -6,6 +6,7 @@ import { CommonActions } from '@react-navigation/native';
 import * as Database from './Database';
 import AppContext from './AppContext';
 import * as Location from 'expo-location';
+import CryptoES from 'crypto-es';
 
 const { UsbSerial } = NativeModules;
 
@@ -28,7 +29,7 @@ function formatTime(time) {
 
 const Item = ({item, navigation, scheme}) => (
   <View style={styles.item}>
-    <Pressable style={styles.contact} onPress={() => navigation.navigate('Details', {id: item.id, name: item.name, address: item.address})}>
+    <Pressable style={styles.contact} onPress={() => navigation.navigate('Details', {id: item.id, name: item.name, address: item.address, pubKey: item.pubKey})}>
       <Text style={[styles.name, {color: scheme === 'dark' ? 'white' : 'black'}]}>{item.name}</Text>
       <Text style={[styles.time, {color: scheme === 'dark' ? 'white' : 'black'}]}>{formatTime(item.time)}</Text>
       <Text style={[styles.message, {color: scheme === 'dark'  ?'white' : 'black'}]} numberOfLines={2}>{item.message}</Text>
@@ -96,7 +97,15 @@ const HomeScreen = ({navigation}) => {
 
           Database.getContactIdByAddress(address).then((id) => {
             if (id) {
-              Database.insertMessage(id, text, Date.now());
+              Database.getKeyFromContact(id).then((pubKey) => {
+                if (pubKey) {
+                  const decryptedText = CryptoES.AES.decrypt(text, pubKey)
+
+                  console.log(decryptedText);
+
+                  Database.insertMessage(id, decryptedText, Date.now());
+                }
+              });
             }
           });
         }

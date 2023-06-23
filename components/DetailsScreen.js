@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, Pressable, FlatList, ToastAndroid, NativeModules, TouchableOpacity, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Pressable, FlatList, NativeModules, TouchableOpacity, ImageBackground } from 'react-native';
 import { FontAwesome, Ionicons, Entypo } from '@expo/vector-icons';
 import * as Databse from './Database';
 import * as Speech from 'expo-speech';
@@ -8,6 +8,7 @@ import AppContext from './AppContext';
 import { Menu, MenuOptions, MenuTrigger, MenuOption } from 'react-native-popup-menu';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CryptoES from 'crypto-es';
 
 const { UsbSerial } = NativeModules;
 
@@ -73,11 +74,17 @@ function DetailsScreen({route, navigation}) {
   };
 
   const sendMessages = (text) => {
-    console.log('Sent message to ' + route.params.address + " text: " + text);
-    UsbSerial.sendMessage(text, route.params.address, 1);
-    setMessages([...messages, { id: messageSize + 1, message: text, time: Date.now() }]);
-    Databse.insertMessage(route.params.id, text, Date.now(), 1);
-    this.textInput.clear();
+    if (text.length > 0) {
+      console.log('Sent message to ' + route.params.address + " text: " + text);
+
+      const encrypted = CryptoES.AES.encrypt(text, route.params.pubKey).toString();
+      console.log('encryptedText', encrypted);
+
+      UsbSerial.sendMessage(encrypted, route.params.address, 1);
+      setMessages([...messages, { id: messageSize + 1, message: text, time: Date.now() }]);
+      Databse.insertMessage(route.params.id, text, Date.now(), 1);
+      this.textInput.clear();
+    }
   };
 
   const startListening = () => {
