@@ -33,21 +33,21 @@ const FinishSetup = (navigation, name, address) => {
   
     Databse.initDatabase();
   
+    try {
+      AsyncStorage.setItem('isInitialized', "1")
+    } catch (error) {
+      console.error(error);
+    }
+
     Databse.addContactInfo(name, address, keys.public);
-  });
 
-  try {
-    AsyncStorage.setItem('isInitialized', "1")
-  } catch (error) {
-    console.error(error);
-  }
-
-  navigation.dispatch(() => {
-    return CommonActions.reset({
-      routes: [
-        { name: 'Home' },
-      ],
-      index: 0,
+    navigation.dispatch(() => {
+      return CommonActions.reset({
+        routes: [
+          { name: 'Home' },
+        ],
+        index: 0,
+      });
     });
   });
 }
