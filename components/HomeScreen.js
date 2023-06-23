@@ -99,7 +99,7 @@ const HomeScreen = ({navigation}) => {
           Database.getContactIdByAddress(address).then((id) => {
             if (id) {
               SecureStore.getItemAsync('privKey').then((privKey) => {
-                RSA.decrypt(encodedMessage, privKey).then(decryptedText => {
+                RSA.decrypt(text, privKey).then(decryptedText => {
                   console.log(decryptedText);
 
                   if (decryptedText.length > 0) {
